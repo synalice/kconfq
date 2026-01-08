@@ -1,0 +1,69 @@
+# SPDX-FileCopyrightText: © 2026 Nikita Krasnov <nikita.nikita.krasnov@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: json-format
+        name: format JSON files with jq
+        language: system
+        entry: nix develop -c scripts/fmt-json.sh
+        types_or: [json]
+        pass_filenames: true
+
+      - id: meson-format
+        name: format meson.build files
+        language: system
+        entry: nix develop -c meson format -i
+        types_or: [meson]
+        pass_filenames: true
+
+      - id: nix-flake-check
+        name: lint flake.nix
+        language: system
+        entry: nix develop -c nix flake check
+        types_or: [nix]
+        pass_filenames: false
+
+      - id: nix-fmt
+        name: format flake.nix
+        language: system
+        entry: nix develop -c nix fmt
+        types_or: [nix]
+        pass_filenames: true
+
+      - id: cargo-check
+        name: cargo check
+        entry: nix develop -c cargo check --all-features --all-targets --
+        language: system
+        pass_filenames: false
+        types: [rust]
+
+      - id: cargo-fmt
+        name: format flake.nix
+        language: system
+        entry: nix develop -c cargo fmt --all --
+        types_or: [rust]
+        pass_filenames: false
+
+      - id: cargo-clippy
+        name: cargo clippy
+        entry: nix develop -c cargo clippy --tests --all-features -- -D warnings
+        language: system
+        types_or: [rust]
+        pass_filenames: false
+
+      - id: reuse
+        name: check compliance with REUSE Specification
+        language: system
+        entry: nix develop -c reuse lint
+        pass_filenames: false

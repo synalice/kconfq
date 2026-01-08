@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: © 2026 Nikita Krasnov <nikita.nikita.krasnov@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
+[package]
+name = "kconfq"
+version = "0.1.0"
+authors = ["Nikita Krasnov <nikita.nikita.krasnov@gmail.com>"]
+edition = "2024"
+description = "A portable way to query kernel configuration on a live system"
+readme = "../README.md"
+repository = "https://github.com/synalice/kconfq"
+license = "MIT"
+keywords = ["kconfig", "query", "kernel-config", "config"]
+categories = ["command-line-utilities", "config", "os", "parsing"]

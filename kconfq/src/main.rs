@@ -1,0 +1,7 @@
+// SPDX-FileCopyrightText: © 2026 Nikita Krasnov <nikita.nikita.krasnov@gmail.com>
+//
+// SPDX-License-Identifier: MIT
+
+fn main() {
+    println!("Hello, world!");
+}

@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: © 2026 Nikita Krasnov <nikita.nikita.krasnov@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
+language = "C"
+
+# REUSE-IgnoreStart
+header = """
+// SPDX-FileCopyrightText: © 2026 Nikita Krasnov <nikita.nikita.krasnov@gmail.com>
+//
+// SPDX-License-Identifier: MIT"""
+# REUSE-IgnoreEnd
+
+documentation = true
+
+pragma_once = true
+
+tab_width = 4
