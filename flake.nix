@@ -9,10 +9,6 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     flake-utils.url = "github:numtide/flake-utils";
-    fenix = {
-      url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
@@ -20,18 +16,12 @@
       self,
       nixpkgs,
       flake-utils,
-      fenix,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         lib = pkgs.lib;
-        rustToolchain =
-          (fenix.packages.${system}.fromToolchainName {
-            name = (pkgs.lib.importTOML ./rust-toolchain.toml).toolchain.channel;
-            sha256 = "sha256-sqSWJDUxc+zaz1nBWMAJKTAGBuGWP25GCftIOlCEAtA=";
-          }).toolchain;
       in
       {
         formatter = pkgs.nixfmt-rfc-style;
@@ -43,73 +33,36 @@
 
         packages.default = self.packages.${system}.kconfq;
 
-        packages.kconfq =
-          (pkgs.makeRustPlatform {
-            cargo = rustToolchain;
-            rustc = rustToolchain;
-          }).buildRustPackage
+        packages.kconfq = pkgs.callPackage ./nix/kconfq.nix { };
+
+        packages.libkconfq = pkgs.callPackage ./nix/libkconfq.nix { stdenv = pkgs.clangStdenv; };
+
+        devShells.default =
+          pkgs.mkShell.override
             {
-              pname = "kconfq";
-              version = "0.1.0";
+              stdenv = pkgs.clangStdenv;
+            }
+            {
+              inputsFrom = [ self.packages.${system}.libkconfq ];
 
-              src = ./.;
+              buildInputs = [
+                pkgs.bash
+                pkgs.mesonlsp
+                pkgs.rust-analyzer
+                pkgs.rustfmt
+                pkgs.clippy
+                pkgs.prek
+                pkgs.reuse
+                pkgs.jq
+                pkgs.tree
+                # pre-commit hooks from https://github.com/pre-commit/pre-commit-hooks repo invoke it
+                pkgs.uv
+              ];
 
-              cargoLock.lockFile = ./Cargo.lock;
-
-              meta = {
-                description = "A portable way to query kernel configuration on a live system";
-                homepage = "https://github.com/synalice/kconfq";
-                license = lib.licenses.mit;
-                mainProgram = "kconfq";
-              };
+              shellHook = ''
+                prek install
+              '';
             };
-
-        packages.libkconfq = pkgs.stdenv.mkDerivation {
-          pname = "libkconfq";
-          version = "0.1.0";
-          src = ./.;
-
-          doCheck = true;
-
-          outputs = [
-            "out"
-            "dev"
-          ];
-
-          nativeBuildInputs = [
-            rustToolchain
-            pkgs.meson
-            pkgs.ninja
-            pkgs.pkg-config
-            pkgs.rust-cbindgen
-          ];
-
-          meta = {
-            description = "A portable way to query kernel configuration on a live system";
-            homepage = "https://github.com/synalice/kconfq";
-            license = lib.licenses.mit;
-          };
-        };
-
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [ self.packages.${system}.libkconfq ];
-
-          buildInputs = [
-            rustToolchain
-            pkgs.bash
-            pkgs.mesonlsp
-            pkgs.prek
-            pkgs.reuse
-            pkgs.jq
-            pkgs.tree
-            # pre-commit hooks from https://github.com/pre-commit/pre-commit-hooks repo invoke it
-            pkgs.uv
-          ];
-
-          shellHook = ''
-            prek install
-          '';
-        };
       }
     );
 }
