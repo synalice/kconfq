@@ -47,7 +47,7 @@ kconfq = dependency('kconfq')
 ### Building from source
 
 ```bash
-meson setup builddir
+meson setup builddir/
 meson compile -C builddir/
 meson install -C builddir/
 ```
