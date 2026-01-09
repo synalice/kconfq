@@ -13,3 +13,6 @@ repository = "https://github.com/synalice/kconfq"
 license = "MIT"
 keywords = ["kconfig", "query", "kernel-config", "config"]
 categories = ["command-line-utilities", "config", "os", "parsing"]
+
+[dependencies]
+clap = { version = "4.5.54", features = ["derive"] }

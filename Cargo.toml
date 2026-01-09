@@ -5,3 +5,4 @@
 [workspace]
 resolver = "3"
 members = ["kconfq", "kconfq-ffi"]
+default-members = ["kconfq"]
