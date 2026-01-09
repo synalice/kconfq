@@ -45,7 +45,7 @@
             {
               inputsFrom = [ self.packages.${system}.libkconfq ];
 
-              buildInputs = [
+              packages = [
                 pkgs.bash
                 pkgs.mesonlsp
                 pkgs.rust-analyzer
