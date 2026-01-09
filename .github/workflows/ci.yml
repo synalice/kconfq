@@ -16,10 +16,10 @@ jobs:
     strategy:
       matrix:
         include:
-        - arch: x86_64-linux
-          os: ubuntu-24.04
-        - arch: aarch64-linux
-          os: ubuntu-24.04-arm
+          - arch: x86_64-linux
+            os: ubuntu-24.04
+          - arch: aarch64-linux
+            os: ubuntu-24.04-arm
     runs-on: ${{ matrix.os }}
     name: "build kconfq: ${{ matrix.arch }}"
     steps:
@@ -28,26 +28,21 @@ jobs:
       - name: Setup Nix
         uses: ./.github/actions/nix-setup
 
-      - name: Build $out output
+      - name: Build
         run: |
           nix build .#packages.${{ matrix.arch }}.default
           tree result
 
-      - name: Build $dev output
-        run: |
-          nix build .#packages.${{ matrix.arch }}.default.dev
-          tree result-dev
-
-  build-libkconfq:
+  build-libkconfq-meson:
     strategy:
       matrix:
         include:
-        - arch: x86_64-linux
-          os: ubuntu-24.04
-        - arch: aarch64-linux
-          os: ubuntu-24.04-arm
+          - arch: x86_64-linux
+            os: ubuntu-24.04
+          - arch: aarch64-linux
+            os: ubuntu-24.04-arm
     runs-on: ${{ matrix.os }}
-    name: "build libkconfq: ${{ matrix.arch }}"
+    name: "build libkconfq (with meson): ${{ matrix.arch }}"
     steps:
       - uses: actions/checkout@v5
 
@@ -65,6 +60,51 @@ jobs:
 
       - name: Tree isntallroot/
         run: tree installroot/
+
+  build-libkconfq-nix:
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64-linux
+            os: ubuntu-24.04
+          - arch: aarch64-linux
+            os: ubuntu-24.04-arm
+    runs-on: ${{ matrix.os }}
+    name: "build libkconfq (with nix): ${{ matrix.arch }}"
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Nix
+        uses: ./.github/actions/nix-setup
+
+      - name: Build $out
+        run: |
+          nix build .#libkconfq.out
+          tree result/
+
+      - name: Build $dev
+        run: |
+          nix build .#libkconfq.dev
+          tree result-dev/
+
+  cross-compile-libkconfq:
+    runs-on: ubuntu-24.04
+    name: "cross-compile libkconfq: x86_64-linux -> aarch64-linux"
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Nix
+        uses: ./.github/actions/nix-setup
+
+      - name: Cross-compile $out
+        run: |
+          ./scripts/cross-compile.sh aarch64-multiplatform ./nix/libkconfq.nix out
+          tree result/
+
+      - name: Cross-compile $dev
+        run: |
+          ./scripts/cross-compile.sh aarch64-multiplatform ./nix/libkconfq.nix dev
+          tree result-dev/
 
   run-pre-commit-hooks:
     name: Run pre-commit hooks

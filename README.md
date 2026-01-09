@@ -89,6 +89,21 @@ inside your derivation's `buildInputs`
 }
 ```
 
+## Cross-compilation
+
+The project was created with cross-compilation in mind. To cross-compile
+`libkconfq` Nix derivation for `aarch64-unknown-linux-gnu` run the following
+script
+
+```bash
+./scripts/cross-compile.sh aarch64-multiplatform ./nix/libkconfq.nix out
+```
+
+> [!TIP]
+> To cross-compile for different host architectures, replace
+> `aarch64-multiplatform` with `riscv64` or something else. [Read more
+> here](https://nix.dev/tutorials/cross-compilation.html#choosing-the-host-platform-with-nix).
+
 ## License
 
 This project is under the [MIT](https://opensource.org/license/mit) license.
