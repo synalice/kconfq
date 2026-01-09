@@ -91,9 +91,10 @@ inside your derivation's `buildInputs`
 
 ## Cross-compilation
 
-The project was created with cross-compilation in mind. To cross-compile
-`libkconfq` Nix derivation for `aarch64-unknown-linux-gnu` run the following
-script
+The project was created with easy cross-compilation in mind.
+
+Here is how you can cross-compile `libkconfq` for `aarch64-unknown-linux-gnu`
+using Nix
 
 ```bash
 ./scripts/cross-compile.sh aarch64-multiplatform ./nix/libkconfq.nix out
