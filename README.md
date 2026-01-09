@@ -1,5 +1,19 @@
 # kconfq
 
+[![Crates.io][crates-badge]][crates-url]
+[![docs.rs][docs-badge]][docs-url]
+[![MIT licensed][mit-badge]][mit-url]
+[![Build Status][actions-badge]][actions-url]
+
+[crates-badge]: https://img.shields.io/crates/v/kconfq.svg
+[crates-url]: https://crates.io/crates/kconfq
+[docs-badge]: https://img.shields.io/docsrs/kconfq
+[docs-url]: https://docs.rs/kconfq
+[mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
+[mit-url]: https://github.com/synalice/kconfq/blob/master/LICENSE
+[actions-badge]: https://img.shields.io/github/actions/workflow/status/synalice/kconfq/ci.yml
+[actions-url]: https://github.com/synalice/kconfq/actions/workflows/ci.yml
+
 A portable way to query kernel configuration on a live system (`/boot/config-*`
 or `/proc/config.gz`).
 
