@@ -43,7 +43,10 @@
               stdenv = pkgs.clangStdenv;
             }
             {
-              inputsFrom = [ self.packages.${system}.libkconfq ];
+              inputsFrom = [
+                self.packages.${system}.kconfq
+                self.packages.${system}.libkconfq
+              ];
 
               packages = [
                 pkgs.bash
