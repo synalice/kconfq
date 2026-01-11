@@ -11,4 +11,4 @@ project(
     meson_version: '>=1.9.1',
 )
 
-subdir('kconfq-ffi')
+subdir('libkconfq')

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 [package]
-name = "kconfq-ffi"
+name = "libkconfq"
 version = "0.1.0"
 edition = "2024"
 publish = false
