@@ -14,6 +14,10 @@
 [actions-badge]: https://img.shields.io/github/actions/workflow/status/synalice/kconfq/ci.yml
 [actions-url]: https://github.com/synalice/kconfq/actions/workflows/ci.yml
 
+> [!CAUTION]
+> The project is WIP and is not ready to be used yet! Please wait until the
+> version `v1.0.0`.
+
 A portable way to query kernel configuration on a live system (`/boot/config-*`
 or `/proc/config.gz`).
 

@@ -5,7 +5,7 @@
 project(
     'kconfq',
     'rust',
-    version: '0.1.0',
+    version: '0.1.1',
     license: 'MIT',
     license_files: ['LICENSE'],
     meson_version: '>=1.9.1',
