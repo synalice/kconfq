@@ -4,5 +4,5 @@
 
 [workspace]
 resolver = "3"
-members = ["kconfq", "libkconfq"]
+members = ["kconfq"]
 default-members = ["kconfq"]

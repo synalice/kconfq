@@ -41,13 +41,6 @@ repos:
         types_or: [nix]
         pass_filenames: true
 
-      - id: cargo-check
-        name: cargo check
-        entry: nix develop -c cargo check --all-features --all-targets --
-        language: system
-        pass_filenames: false
-        types: [rust]
-
       - id: cargo-fmt
         name: format flake.nix
         language: system

@@ -12,7 +12,8 @@ header = """
 # REUSE-IgnoreEnd
 
 documentation = true
-
 pragma_once = true
-
 tab_width = 4
+
+[parse]
+parse_deps = true
