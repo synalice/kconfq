@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: MIT
 
+use anyhow::Result;
 use clap::Parser;
+use kconfq::locate_config_file;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -17,10 +19,8 @@ struct Args {
     count: u8,
 }
 
-fn main() {
-    let args = Args::parse();
-
-    for _ in 0..args.count {
-        println!("Hello {}!", args.name);
-    }
+fn main() -> Result<()> {
+    let path = locate_config_file()?;
+    println!("{path:?}");
+    Ok(())
 }
