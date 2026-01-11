@@ -3,24 +3,37 @@
 // SPDX-License-Identifier: MIT
 
 use anyhow::Result;
-use clap::Parser;
-use kconfq::locate_config_file;
+use clap::{Parser, Subcommand};
+
+use cli::commands;
+
+mod cli;
 
 /// Simple program to greet a person
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// Name of the person to greet
-    #[arg(short, long)]
-    name: String,
+#[derive(Parser)]
+#[command(version, about, arg_required_else_help = true)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
 
-    /// Number of times to greet
-    #[arg(short, long, default_value_t = 1)]
-    count: u8,
+#[derive(Subcommand)]
+enum Commands {
+    /// Print path to the kernel config
+    Path,
+    /// Print the contents of the kernel config
+    Config,
 }
 
 fn main() -> Result<()> {
-    let path = locate_config_file()?;
-    println!("{path:?}");
+    let cli = Cli::parse();
+
+    if let Some(command) = &cli.command {
+        match command {
+            Commands::Path => commands::print_config_path()?,
+            Commands::Config => commands::print_config()?,
+        }
+    }
+
     Ok(())
 }

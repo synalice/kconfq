@@ -4,40 +4,34 @@
 
 use std::path::PathBuf;
 
-use nix::errno::Errno;
-use thiserror::Error;
+use error::*;
 
-#[derive(Error, Debug)]
-pub enum GetLinuxKernelVersionError {
-    #[error("uname syscall returned with an errno {0}")]
-    UnameError(Errno),
-    #[error("release level of the OS is missing from uname")]
-    MissingUnameRelease,
-}
+pub mod error;
 
-#[derive(Error, Debug)]
-pub enum LocateConfigFileError {
-    #[error("error getting linux kernel version")]
-    ErrorGettignLinuxKernelVersion(#[from] GetLinuxKernelVersionError),
-}
-
-/// Searches through all possible config locations and returns path to it if
-/// found.
+/// Search through all known config locations and return a path to it.
+///
+/// May not find a config an return `Ok(None)`
 pub fn locate_config_file() -> Result<Option<PathBuf>, LocateConfigFileError> {
+    let proc_path = PathBuf::from("/proc/config.gz");
+
+    if proc_path.exists() {
+        return Ok(Some(proc_path));
+    }
+
     let uname_r = get_linux_kernel_version()?;
+    let boot_path = PathBuf::from(&format!("/boot/config-{uname_r}"));
 
-    let possible_paths = [
-        PathBuf::from("/proc/config.gz"),
-        PathBuf::from(&format!("/boot/config-{uname_r}")),
-    ];
-
-    for p in possible_paths {
-        if p.exists() {
-            return Ok(Some(p));
-        }
+    if boot_path.exists() {
+        return Ok(Some(boot_path));
     }
 
     Ok(None)
+}
+
+/// Same as [`locate_config_file`], but return and error if config was not
+/// found.
+pub fn require_config_file() -> Result<PathBuf, RequireConfigFileError> {
+    locate_config_file()?.ok_or(RequireConfigFileError::NotFound)
 }
 
 /// Get the version specified by `uname -r`.
