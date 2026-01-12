@@ -12,6 +12,12 @@ pub mod error;
 ///
 /// May not find a config an return `Ok(None)`
 pub fn locate_config_file() -> Result<Option<PathBuf>, LocateConfigFileError> {
+    let default_path = PathBuf::from(env!("DEFAULT_CONFIG_PATH"));
+
+    if default_path.exists() {
+        return Ok(Some(default_path));
+    }
+
     let proc_path = PathBuf::from("/proc/config.gz");
 
     if proc_path.exists() {
