@@ -4,19 +4,24 @@
 
 use std::fs::File;
 use std::io::{self, BufReader, BufWriter};
+use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 
 use flate2::read::GzDecoder;
-use kconfq::require_config;
+use kconfq::{Config, require_config};
 
 pub fn print_config_path() -> Result<()> {
     println!("{}", require_config()?.path().to_string_lossy());
     Ok(())
 }
 
-pub fn print_config() -> Result<()> {
-    let config = require_config()?;
+pub fn print_config(path: &Option<PathBuf>) -> Result<()> {
+    let config = match path {
+        Some(path) => Config::new(path),
+        None => require_config()?,
+    };
+
     let config_file = File::open(config.path()).context("failed to open config file")?;
 
     let is_gzip = config

@@ -99,6 +99,10 @@ impl ConfigEntry {
 }
 
 impl Config {
+    pub fn new<P: Into<PathBuf>>(path: P) -> Self {
+        Self { path: path.into() }
+    }
+
     pub fn path(&self) -> &PathBuf {
         &self.path
     }

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+use std::path::PathBuf;
+
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
@@ -22,7 +24,10 @@ enum Commands {
     /// Print path to the kernel config
     Path,
     /// Print the contents of the kernel config
-    Config,
+    Config {
+        /// Read kernel config from this path
+        path: Option<PathBuf>,
+    },
 }
 
 fn main() -> Result<()> {
@@ -31,7 +36,7 @@ fn main() -> Result<()> {
     if let Some(command) = &cli.command {
         match command {
             Commands::Path => commands::print_config_path()?,
-            Commands::Config => commands::print_config()?,
+            Commands::Config { path } => commands::print_config(path)?,
         }
     }
 
