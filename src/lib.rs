@@ -9,6 +9,8 @@ use std::path::PathBuf;
 use error::*;
 use flate2::read::GzDecoder;
 
+#[cfg(feature = "capi")]
+pub mod capi;
 pub mod error;
 
 /// A kernel config struct.
