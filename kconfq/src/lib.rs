@@ -7,6 +7,7 @@ use std::io::{BufReader, Read};
 use std::path::PathBuf;
 
 use error::*;
+use flate2::read::GzDecoder;
 
 pub mod error;
 
@@ -103,12 +104,24 @@ impl Config {
         Self { path: path.into() }
     }
 
+    /// Return a reader to a kernel config file.
+    pub fn reader(&self) -> Result<Box<dyn Read>, GettingConfigReaderError> {
+        let config_file =
+            File::open(self.path()).map_err(GettingConfigReaderError::FailedToOpenFile)?;
+
+        if self.is_gzip()? {
+            Ok(Box::new(GzDecoder::new(config_file)))
+        } else {
+            Ok(Box::new(BufReader::new(config_file)))
+        }
+    }
+
     pub fn path(&self) -> &PathBuf {
         &self.path
     }
 
     /// Detect whenever the config file is gzip-compressed or not.
-    pub fn is_gzip(self) -> Result<bool, IsGzipError> {
+    pub fn is_gzip(&self) -> Result<bool, IsGzipError> {
         let file = File::open(self.path()).map_err(IsGzipError::FailedToOpenFile)?;
         let mut reader = BufReader::new(file);
 

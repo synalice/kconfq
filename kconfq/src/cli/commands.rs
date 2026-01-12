@@ -2,13 +2,11 @@
 //
 // SPDX-License-Identifier: MIT
 
-use std::fs::File;
-use std::io::{self, BufReader, BufWriter};
+use std::io::{self, BufWriter};
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 
-use flate2::read::GzDecoder;
 use kconfq::{Config, require_config};
 
 pub fn print_config_path() -> Result<()> {
@@ -22,21 +20,11 @@ pub fn print_config(path: &Option<PathBuf>) -> Result<()> {
         None => require_config()?,
     };
 
-    let config_file = File::open(config.path()).context("failed to open config file")?;
-
-    let is_gzip = config
-        .is_gzip()
-        .context("failed to check if config file is gzip-compressed")?;
-
+    let mut reader = config
+        .reader()
+        .context("failed to get reader of the kernel config file")?;
     let mut stdout_writer = BufWriter::new(io::stdout().lock());
-
-    if is_gzip {
-        let mut reader = GzDecoder::new(config_file);
-        io::copy(&mut reader, &mut stdout_writer)?;
-    } else {
-        let mut reader = BufReader::new(config_file);
-        io::copy(&mut reader, &mut stdout_writer)?;
-    }
+    io::copy(&mut reader, &mut stdout_writer)?;
 
     Ok(())
 }

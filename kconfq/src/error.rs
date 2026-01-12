@@ -38,3 +38,11 @@ pub enum IsGzipError {
     #[error("failed to read magic of the kernel config file: {0}")]
     FailedToReadMagic(io::Error),
 }
+
+#[derive(Error, Debug)]
+pub enum GettingConfigReaderError {
+    #[error("failed to open kernel config file: {0}")]
+    FailedToOpenFile(io::Error),
+    #[error("failed to check whenever the file is gzip-compressed or not")]
+    GzipError(#[from] IsGzipError),
+}
