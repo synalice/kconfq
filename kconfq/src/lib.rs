@@ -14,6 +14,60 @@ pub struct Config {
     path: PathBuf,
 }
 
+/// Represents entry in the kernel config.
+///
+/// # Examples
+///
+/// - `# CONFIG_EFI_PGT_DUMP is not set` will become
+///   ```
+///   ConfigEntry {
+///       name: "CONFIG_EFI_PGT_DUMP",
+///       value: None
+///   }
+///   ```
+/// - `CONFIG_CC_IS_GCC=y` will become
+///   ```
+///   ConfigEntry {
+///       name: "CONFIG_CC_IS_GCC",
+///       value: Some("y")
+///   }
+///   ```
+/// - `CONFIG_IKHEADERS=m` will become
+///   ```
+///   ConfigEntry {
+///       name: "CONFIG_IKHEADERS",
+///       value: Some("m")
+///   }
+///   ```
+/// - `CONFIG_CC_VERSION_TEXT="gcc (GCC) 14.3.0"` will become
+///   ```
+///   ConfigEntry {
+///       name: "CONFIG_CC_VERSION_TEXT",
+///       value: Some("gcc (GCC) 14.3.0")
+///   }
+///   ```
+/// - `CONFIG_GCC_VERSION=140300` will become
+///   ```
+///   ConfigEntry {
+///       name: "CONFIG_GCC_VERSION",
+///       value: Some("140300")
+///   }
+///   ```
+pub struct ConfigEntry {
+    name: String,
+    value: Option<String>,
+}
+
+impl ConfigEntry {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn value(&self) -> Option<&String> {
+        self.value.as_ref()
+    }
+}
+
 impl Config {
     pub fn path(&self) -> &PathBuf {
         &self.path
@@ -61,7 +115,7 @@ pub fn locate_config() -> Result<Option<Config>, LocateConfigFileError> {
     Ok(None)
 }
 
-/// Same as [`locate_config_file`], but return and error if config was not
+/// Same as [`locate_config`], but return and error if config was not
 /// found.
 pub fn require_config() -> Result<Config, RequireConfigFileError> {
     locate_config()?.ok_or(RequireConfigFileError::NotFound)
