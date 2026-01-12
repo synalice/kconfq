@@ -27,36 +27,36 @@ It provides:
 - A C-API library (`libkconfq.so`, `kconfq.h`, `kconfq.pc`)
 - A Rust crate
 
-## Using as a CLI
+## Usage (as a CLI)
 
-### Nix
-
-To run the CLI without installing it
-
-```bash
-nix run github:synalice/kconfq
-```
-
-To install the CLI
-
-```bash
-nix profile install github:synalice/kconfq
-```
-
-### Cargo
-
-To install the CLI from [crates.io](https://crates.io/crates/kconfq)
+Instaling via cargo:
 
 ```bash
 cargo install kconfq
 ```
 
-## Using as a C-API library
+Instaling via Nix:
 
-In all of the examples bellow `kconfq.pc` file would be installed so that the
-library can be found by `pkg-config`.
+```bash
+nix profile install github:synalice/kconfq
+```
 
-In Meson you would then find the library like this
+Running without installation:
+
+```bash
+nix run github:synalice/kconfq
+```
+
+## Usage as a C-API library
+
+Even though the core of the library is written in Rust, it can be compiled as a
+`cdynlib` with C ABI.
+
+Alongside with `libkconfq.so` the project will also generate `kconfq.h` and
+`kconfq.pc`.
+
+All of this makes it possible to use library as any normal C dependency. Here is
+an example of how this would look like in Meson
 
 ```meson
 kconfq = dependency('kconfq')
@@ -64,15 +64,16 @@ kconfq = dependency('kconfq')
 
 ### Building from source
 
+To build and install library from source you have to use
+[cargo-c](https://crates.io/crates/cargo-c).
+
 ```bash
-meson setup builddir/
-meson compile -C builddir/
-meson install -C builddir/
+cargo cbuild --release --destdir=${D} --prefix=/usr --libdir=/usr/lib64
+cargo ctest
+cargo cinstall --release --destdir=${D} --prefix=/usr --libdir=/usr/lib64
 ```
 
-This will build and then install `libkconfq.so`, `kconfq.h` and `kconfq.pc`.
-
-### Using with `flake.nix`
+### Using inside the `flake.nix`
 
 This is how you would add this library to your `flake.nix` and then reference it
 inside your derivation's `buildInputs`
