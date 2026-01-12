@@ -20,13 +20,6 @@ repos:
         types_or: [json]
         pass_filenames: true
 
-      - id: meson-format
-        name: format meson.build files
-        language: system
-        entry: nix develop -c meson format -i
-        types_or: [meson]
-        pass_filenames: true
-
       - id: nix-flake-check
         name: lint flake.nix
         language: system

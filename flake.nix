@@ -50,7 +50,6 @@
 
               packages = [
                 pkgs.bash
-                pkgs.mesonlsp
                 pkgs.rust-analyzer
                 pkgs.rustfmt
                 pkgs.clippy
@@ -58,9 +57,6 @@
                 pkgs.reuse
                 pkgs.jq
                 pkgs.tree
-
-                pkgs.cargo-c
-
                 # pre-commit hooks from https://github.com/pre-commit/pre-commit-hooks repo invoke it
                 pkgs.uv
               ];

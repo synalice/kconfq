@@ -14,6 +14,10 @@ rustPlatform.buildRustPackage {
 
   cargoLock.lockFile = ../Cargo.lock;
 
+  env = {
+    RUSTFLAGS = "-Dwarnings";
+  };
+
   meta = {
     description = "A portable way to query kernel configuration on a live system";
     homepage = "https://github.com/synalice/kconfq";

@@ -26,6 +26,10 @@ rustPlatform.buildRustPackage rec {
 
   nativeBuildInputs = [ cargo-c ];
 
+  env = {
+    RUSTFLAGS = "-Dwarnings";
+  };
+
   buildPhase = ''
     runHook preBuild
     ${rust.envVars.setEnv} cargo cbuild -j $NIX_BUILD_CORES --release --frozen --prefix=${placeholder "out"} --target ${stdenv.hostPlatform.rust.rustcTarget}

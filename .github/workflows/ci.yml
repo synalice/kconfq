@@ -12,28 +12,8 @@ on:
       - dev
 
 jobs:
-  native-build-kconfq-cargo:
-    name: "kconfq native build (via Cargo): ${{ matrix.arch }}"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - arch: x86_64-linux
-            os: ubuntu-24.04
-
-          - arch: aarch64-linux
-            os: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Setup Nix
-        uses: ./.github/actions/nix-setup
-
-      - name: Run `cargo build`
-        run: RUSTFLAGS="-Dwarnings" cargo build
-
-  native-build-kconfq-nix:
-    name: "kconfq native build (via Nix): ${{ matrix.arch }}"
+  native-build-kconfq:
+    name: "kconfq native build: ${{ matrix.arch }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -50,41 +30,13 @@ jobs:
         uses: ./.github/actions/nix-setup
 
       - name: Build kconfq
-        run: |
-          nix build .#packages.${{ matrix.arch }}.kconfq
-          tree result
+        run: nix build .#kconfq
 
-  native-build-libkconfq-meson:
-    name: "libkconfq native build (via Meson): ${{ matrix.arch }}"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - arch: x86_64-linux
-            os: ubuntu-24.04
+      - name: Tree result
+        run: tree result
 
-          - arch: aarch64-linux
-            os: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Setup Nix
-        uses: ./.github/actions/nix-setup
-
-      - name: Meson setup
-        run: meson setup builddir/
-
-      - name: Meson compile
-        run: meson compile -C builddir/
-
-      - name: Meson install
-        run: meson install -C builddir/ --destdir ../installroot
-
-      - name: Tree installroot
-        run: tree installroot/
-
-  native-build-libkconfq-nix:
-    name: "libkconfq native build (via Nix): ${{ matrix.arch }}"
+  native-build-libkconfq:
+    name: "libkconfq native build: ${{ matrix.arch }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -101,14 +53,16 @@ jobs:
         uses: ./.github/actions/nix-setup
 
       - name: Build libkconfq $out
-        run: |
-          nix build .#packages.${{ matrix.arch }}.libkconfq.out
-          tree result/
+        run: nix build .#libkconfq.out
+
+      - name: Tree result/
+        run: tree result/
 
       - name: Build libkconfq $dev
-        run: |
-          nix build .#packages.${{ matrix.arch }}.libkconfq.dev
-          tree result-dev/
+        run: nix build .#libkconfq.dev
+
+      - name: Tree result-dev/
+        run: tree result-dev/
 
   cross-compile-kconfq:
     name: "kconfq cross-compiled to aarch64"
@@ -120,9 +74,10 @@ jobs:
         uses: ./.github/actions/nix-setup
 
       - name: Cross-compile $out
-        run: |
-          ./scripts/cross-compile.sh aarch64-multiplatform ./nix/kconfq.nix out
-          tree result/
+        run: ./scripts/cross-compile.sh aarch64-multiplatform ./nix/kconfq.nix out
+
+      - name: Tree result/
+        run: tree result/
 
   cross-compile-libkconfq:
     name: "libkconfq cross-compiled to aarch64"
@@ -138,10 +93,16 @@ jobs:
           ./scripts/cross-compile.sh aarch64-multiplatform ./nix/libkconfq.nix out
           tree result/
 
+      - name: Tree result/
+        run: tree result/
+
       - name: Cross-compile $dev
         run: |
           ./scripts/cross-compile.sh aarch64-multiplatform ./nix/libkconfq.nix dev
           tree result-dev/
+
+      - name: Tree result-dev/
+        run: tree result-dev/
 
   build-docs:
     name: "build documentation"
@@ -164,9 +125,6 @@ jobs:
 
       - name: Setup Nix
         uses: ./.github/actions/nix-setup
-
-      - name: Configure build
-        run: meson setup builddir/
 
       - name: Run pre-commit hooks
         run: prek run --all-files
