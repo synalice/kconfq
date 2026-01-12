@@ -10,61 +10,91 @@ use error::*;
 
 pub mod error;
 
+/// A kernel config struct.
 pub struct Config {
     path: PathBuf,
 }
 
-/// Represents entry in the kernel config.
+/// An entry in the kernel config.
 ///
 /// # Examples
 ///
-/// - `# CONFIG_EFI_PGT_DUMP is not set` will become
-///   ```
-///   ConfigEntry {
-///       name: "CONFIG_EFI_PGT_DUMP",
-///       value: None
-///   }
-///   ```
-/// - `CONFIG_CC_IS_GCC=y` will become
-///   ```
-///   ConfigEntry {
-///       name: "CONFIG_CC_IS_GCC",
-///       value: Some("y")
-///   }
-///   ```
-/// - `CONFIG_IKHEADERS=m` will become
-///   ```
-///   ConfigEntry {
-///       name: "CONFIG_IKHEADERS",
-///       value: Some("m")
-///   }
-///   ```
-/// - `CONFIG_CC_VERSION_TEXT="gcc (GCC) 14.3.0"` will become
-///   ```
-///   ConfigEntry {
-///       name: "CONFIG_CC_VERSION_TEXT",
-///       value: Some("gcc (GCC) 14.3.0")
-///   }
-///   ```
-/// - `CONFIG_GCC_VERSION=140300` will become
-///   ```
-///   ConfigEntry {
-///       name: "CONFIG_GCC_VERSION",
-///       value: Some("140300")
-///   }
-///   ```
+/// `# CONFIG_EFI_PGT_DUMP is not set` will become
+/// ```rust
+/// # use kconfq::{ConfigEntry, ConfigValue};
+/// ConfigEntry::new(
+///     "CONFIG_EFI_PGT_DUMP",
+///     ConfigValue::No,
+/// );
+/// ```
+///
+/// `CONFIG_CC_IS_GCC=y` will become
+/// ```rust
+/// # use kconfq::{ConfigEntry, ConfigValue};
+/// ConfigEntry::new(
+///     "CONFIG_CC_IS_GCC",
+///     ConfigValue::Yes,
+/// );
+/// ```
+///
+/// `CONFIG_IKHEADERS=m` will become
+/// ```rust
+/// # use kconfq::{ConfigEntry, ConfigValue};
+/// ConfigEntry::new(
+///     "CONFIG_IKHEADERS",
+///     ConfigValue::Module,
+/// );
+/// ```
+///
+/// `CONFIG_CC_VERSION_TEXT="gcc (GCC) 14.3.0"` will become
+/// ```rust
+/// # use kconfq::{ConfigEntry, ConfigValue};
+/// ConfigEntry::new(
+///     "CONFIG_CC_VERSION_TEXT",
+///     ConfigValue::Value("gcc (GCC) 14.3.0".to_string()),
+/// );
+/// ```
+///
+/// `CONFIG_GCC_VERSION=140300` will become
+/// ```rust
+/// # use kconfq::{ConfigEntry, ConfigValue};
+/// ConfigEntry::new(
+///     "CONFIG_GCC_VERSION",
+///     ConfigValue::Value("140300".to_string()),
+/// );
+/// ```
 pub struct ConfigEntry {
     name: String,
-    value: Option<String>,
+    value: ConfigValue,
+}
+
+/// Possible value of the [`ConfigEntry`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ConfigValue {
+    /// Example: `CONFIG_CC_IS_GCC=y`
+    Yes,
+    /// Example: `CONFIG_IKHEADERS=m`
+    Module,
+    /// Example: `# CONFIG_EFI_PGT_DUMP is not set`
+    No,
+    /// Example: `CONFIG_GCC_VERSION=140300`
+    Value(String),
 }
 
 impl ConfigEntry {
+    pub fn new(name: impl Into<String>, value: ConfigValue) -> Self {
+        Self {
+            name: name.into(),
+            value,
+        }
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }
 
-    pub fn value(&self) -> Option<&String> {
-        self.value.as_ref()
+    pub fn value(&self) -> &ConfigValue {
+        &self.value
     }
 }
 

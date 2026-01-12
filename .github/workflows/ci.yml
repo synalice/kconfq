@@ -12,8 +12,28 @@ on:
       - dev
 
 jobs:
-  native-build-kconfq:
-    name: "kconfq native build: ${{ matrix.arch }}"
+  native-build-kconfq-cargo:
+    name: "kconfq native build (via Cargo): ${{ matrix.arch }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64-linux
+            os: ubuntu-24.04
+
+          - arch: aarch64-linux
+            os: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Nix
+        uses: ./.github/actions/nix-setup
+
+      - name: Run `cargo build`
+        run: RUSTFLAGS="-Dwarnings" cargo build
+
+  native-build-kconfq-nix:
+    name: "kconfq native build (via Nix): ${{ matrix.arch }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -35,7 +55,7 @@ jobs:
           tree result
 
   native-build-libkconfq-meson:
-    name: "libkconfq (built with Meson) native build: ${{ matrix.arch }}"
+    name: "libkconfq native build (via Meson): ${{ matrix.arch }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -64,7 +84,7 @@ jobs:
         run: tree installroot/
 
   native-build-libkconfq-nix:
-    name: "libkconfq (built with Nix) native build: ${{ matrix.arch }}"
+    name: "libkconfq native build (via Nix): ${{ matrix.arch }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -122,6 +142,18 @@ jobs:
         run: |
           ./scripts/cross-compile.sh aarch64-multiplatform ./nix/libkconfq.nix dev
           tree result-dev/
+
+  build-docs:
+    name: "build documentation"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Nix
+        uses: ./.github/actions/nix-setup
+
+      - name: Run `cargo doc`
+        run: RUSTDOCFLAGS="-Dwarnings" cargo doc
 
   run-pre-commit-hooks:
     name: run pre-commit hooks

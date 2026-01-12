@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+//! All possible library errors.
+
 use std::io;
 
 use nix::errno::Errno;
