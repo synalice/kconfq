@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+use std::io;
+
 use nix::errno::Errno;
 use thiserror::Error;
 
@@ -25,4 +27,12 @@ pub enum RequireConfigFileError {
     Locate(#[from] LocateConfigFileError),
     #[error("kernel config file not found in any known location")]
     NotFound,
+}
+
+#[derive(Error, Debug)]
+pub enum IsGzipError {
+    #[error("failed to open kernel config file: {0}")]
+    FailedToOpenFile(io::Error),
+    #[error("failed to read magic of the kernel config file: {0}")]
+    FailedToReadMagic(io::Error),
 }
