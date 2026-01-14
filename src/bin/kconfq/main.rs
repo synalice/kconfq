@@ -7,9 +7,7 @@ use std::path::PathBuf;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
-use cli::commands;
-
-mod cli;
+mod commands;
 
 /// Simple program to greet a person
 #[derive(Parser)]
