@@ -106,7 +106,7 @@ impl Config {
         Self { path: path.into() }
     }
 
-    /// Return a reader to a kernel config file.
+    /// Get a reader to a kernel config file.
     pub fn reader(&self) -> Result<Box<dyn Read>, GettingConfigReaderError> {
         let config_file =
             File::open(self.path()).map_err(GettingConfigReaderError::FailedToOpenFile)?;

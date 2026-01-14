@@ -26,6 +26,8 @@ enum Commands {
         /// Read kernel config from this path
         path: Option<PathBuf>,
     },
+    /// Get config's entry by its name
+    Get { name: String },
 }
 
 fn main() -> Result<()> {
@@ -35,6 +37,7 @@ fn main() -> Result<()> {
         match command {
             Commands::Path => commands::print_config_path()?,
             Commands::Config { path } => commands::print_config(path)?,
+            Commands::Get { name } => commands::get_entry(name)?,
         }
     }
 
