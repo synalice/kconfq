@@ -64,7 +64,7 @@ pub enum KconfqResult {
 /// [`KconfqResult`] enum. Passing any other arbitrary integer results in
 /// an undefined behavior.
 #[unsafe(no_mangle)]
-pub extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const c_char {
+pub unsafe extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const c_char {
     // SAFETY: all strings are static and null-terminated
     match result {
         KconfqResult::KCONFQ_RESULT_SUCCESS => cstr!("success"),
