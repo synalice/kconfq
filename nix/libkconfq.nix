@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 {
+  version ? "unknown",
   lib,
   rustPlatform,
   cargo-c,
@@ -10,9 +11,10 @@
   stdenv,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage {
+  inherit version;
+
   pname = "libkconfq";
-  version = "0.1.1";
   src = ../.;
 
   outputs = [

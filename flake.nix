@@ -20,6 +20,7 @@
     flake-utils.lib.eachDefaultSystem (
       system:
       let
+        version = (builtins.fromTOML (builtins.readFile ./Cargo.toml)).package.version;
         pkgs = nixpkgs.legacyPackages.${system};
         lib = pkgs.lib;
       in
@@ -33,9 +34,12 @@
 
         packages.default = self.packages.${system}.kconfq;
 
-        packages.kconfq = pkgs.callPackage ./nix/kconfq.nix { };
+        packages.kconfq = pkgs.callPackage ./nix/kconfq.nix { inherit version; };
 
-        packages.libkconfq = pkgs.callPackage ./nix/libkconfq.nix { stdenv = pkgs.clangStdenv; };
+        packages.libkconfq = pkgs.callPackage ./nix/libkconfq.nix {
+          inherit version;
+          stdenv = pkgs.clangStdenv;
+        };
 
         devShells.default =
           pkgs.mkShell.override

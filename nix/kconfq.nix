@@ -3,12 +3,14 @@
 # SPDX-License-Identifier: MIT
 
 {
+  version ? "unknown",
   lib,
   rustPlatform,
 }:
 rustPlatform.buildRustPackage {
+  inherit version;
+
   pname = "kconfq";
-  version = "0.1.1";
 
   src = ../.;
 
