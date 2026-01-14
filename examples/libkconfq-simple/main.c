@@ -20,4 +20,3 @@ error:
   kconfq_free_string(kconf_path);
   return EXIT_SUCCESS;
 }
-.
