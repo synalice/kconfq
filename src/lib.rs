@@ -3,11 +3,14 @@
 // SPDX-License-Identifier: MIT
 
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::{BufRead, BufReader, Read};
 use std::path::PathBuf;
+use std::sync::LazyLock;
+
+use flate2::read::GzDecoder;
+use regex::Regex;
 
 use error::*;
-use flate2::read::GzDecoder;
 
 #[cfg(feature = "capi")]
 pub mod capi;
@@ -168,6 +171,37 @@ pub fn locate_config() -> Result<Option<Config>, LocateConfigFileError> {
 /// found.
 pub fn require_config() -> Result<Config, RequireConfigFileError> {
     locate_config()?.ok_or(RequireConfigFileError::NotFound)
+}
+
+pub fn get_entry(name: &String) -> Result<String, error::GetEntryError> {
+    let config_reader = require_config()?.reader()?;
+    let config_reader = BufReader::new(config_reader);
+
+    if is_config_entry_name_valid(name) {
+        let name = name.trim();
+
+        let regex_is_not_set = Regex::new(&format!(r"^# {} is not set", regex::escape(name)))?;
+        let regex_is_set = Regex::new(&format!(r"^{}=.*$", regex::escape(name)))?;
+
+        for line in config_reader.lines() {
+            let line = line?;
+            let line = line.trim();
+
+            if regex_is_not_set.find(line).is_some() || regex_is_set.find(line).is_some() {
+                return Ok(line.to_string());
+            }
+        }
+    }
+
+    Err(GetEntryError::EntryNotFound(name.to_string()))
+}
+
+fn is_config_entry_name_valid(name: &str) -> bool {
+    static VALID_CONFIG_ENTRY_NAME_REGEX: LazyLock<Regex> = std::sync::LazyLock::new(|| {
+        Regex::new(r"^CONFIG_[A-Z0-9_]+$").expect("hardcoded regex should be valid")
+    });
+
+    VALID_CONFIG_ENTRY_NAME_REGEX.is_match(name)
 }
 
 /// Get the version specified by `uname -r`.

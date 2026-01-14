@@ -46,3 +46,18 @@ pub enum GettingConfigReaderError {
     #[error("failed to check whenever the file is gzip-compressed or not")]
     GzipError(#[from] IsGzipError),
 }
+
+#[derive(Debug, Error)]
+#[allow(unused)]
+pub enum GetEntryError {
+    #[error("entry \"{0}\" was not found")]
+    EntryNotFound(String),
+    #[error("failed to get a reader to a kernel config file")]
+    ConfigReaderError(#[from] GettingConfigReaderError),
+    #[error(transparent)]
+    FailedToFindConfig(#[from] RequireConfigFileError),
+    #[error("entry name is malformed")]
+    MalformedEntryName(#[from] regex::Error),
+    #[error("failed to read kernel config file")]
+    FailedToReadConfig(#[from] io::Error),
+}
