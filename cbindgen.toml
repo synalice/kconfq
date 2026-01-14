@@ -16,6 +16,3 @@ header = """
 documentation = true
 pragma_once = true
 tab_width = 4
-
-[export]
-prefix = "kconfq_"
