@@ -55,8 +55,11 @@ nix run github:synalice/kconfq
 Even though the core of the library is written in Rust, it can be compiled as a
 `cdynlib` with C ABI.
 
-Alongside with `libkconfq.so` the project will also generate `kconfq.h` and
-`kconfq.pc`.
+The project will generate:
+
+- `libkconfq.so`
+- `kconfq.h`
+- `kconfq.pc`
 
 All of this makes it possible to use library as any normal C dependency. Here is
 an example of how this would look like in Meson
