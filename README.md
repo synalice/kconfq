@@ -1,10 +1,13 @@
 # kconfq
 
-[![Crates.io][crates-badge]][crates-url]
+[![GitHub repo][github-repo-badge]][github-repo-url]
+[![crates.io][crates-badge]][crates-url]
 [![docs.rs][docs-badge]][docs-url]
 [![MIT licensed][mit-badge]][mit-url]
-[![Build Status][actions-badge]][actions-url]
+[![build status][actions-badge]][actions-url]
 
+[github-repo-badge]: https://img.shields.io/badge/github-repo-blue?logo=github
+[github-repo-url]: https://github.com/synalice/kconfq
 [crates-badge]: https://img.shields.io/crates/v/kconfq.svg
 [crates-url]: https://crates.io/crates/kconfq
 [docs-badge]: https://img.shields.io/docsrs/kconfq
