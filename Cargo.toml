@@ -4,7 +4,7 @@
 
 [package]
 name = "kconfq"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Nikita Krasnov <nikita.nikita.krasnov@gmail.com>"]
 edition = "2024"
 description = "A portable way to query kernel configuration on a live system"
