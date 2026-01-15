@@ -135,29 +135,27 @@ pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> K
         return KconfqResult::KCONFQ_RESULT_NULL_PARAMETER;
     }
 
-    unsafe {
-        match crate::locate_config() {
-            Ok(Some(config)) => match CString::new(config.path.to_string_lossy().as_bytes()) {
-                Ok(c_string) => {
-                    *out_path = c_string.into_raw();
-                    KconfqResult::KCONFQ_RESULT_SUCCESS
-                }
-                Err(_) => {
-                    *out_path = ptr::null_mut();
-                    KconfqResult::KCONFQ_RESULT_UNKNOWN_ERROR
-                }
+    match crate::locate_config() {
+        Ok(Some(config)) => match CString::new(config.path.to_string_lossy().as_bytes()) {
+            Ok(c_string) => unsafe {
+                *out_path = c_string.into_raw();
+                KconfqResult::KCONFQ_RESULT_SUCCESS
             },
-
-            Ok(None) => {
+            Err(_) => unsafe {
                 *out_path = ptr::null_mut();
-                KconfqResult::KCONFQ_RESULT_NOT_FOUND
-            }
+                KconfqResult::KCONFQ_RESULT_UNKNOWN_ERROR
+            },
+        },
 
-            Err(crate::error::LocateConfigFileError::ErrorGettingLinuxKernelVersion(_)) => {
-                *out_path = ptr::null_mut();
-                KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR
-            }
-        }
+        Ok(None) => unsafe {
+            *out_path = ptr::null_mut();
+            KconfqResult::KCONFQ_RESULT_NOT_FOUND
+        },
+
+        Err(crate::error::LocateConfigFileError::ErrorGettingLinuxKernelVersion(_)) => unsafe {
+            *out_path = ptr::null_mut();
+            KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR
+        },
     }
 }
 
