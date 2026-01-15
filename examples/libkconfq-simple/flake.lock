@@ -44,18 +44,14 @@
         ]
       },
       "locked": {
-        "lastModified": 1768408186,
-        "narHash": "sha256-rh/YCmhFIXnvRP0sIINbBvvlUIHD1xR1EKEJIo5JMHM=",
-        "owner": "synalice",
-        "repo": "kconfq",
-        "rev": "f56a0d2a599c570f615b6245a325733bf2e864b4",
-        "type": "github"
+        "path": "../..",
+        "type": "path"
       },
       "original": {
-        "owner": "synalice",
-        "repo": "kconfq",
-        "type": "github"
-      }
+        "path": "../..",
+        "type": "path"
+      },
+      "parent": []
     },
     "nixpkgs": {
       "locked": {

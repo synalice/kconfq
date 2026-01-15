@@ -3,7 +3,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     flake-utils.url = "github:numtide/flake-utils";
     kconfq = {
-      url = "github:synalice/kconfq";
+      url = "../..";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
