@@ -9,6 +9,7 @@ use std::io;
 use nix::errno::Errno;
 use thiserror::Error;
 
+#[repr(C)]
 #[derive(Error, Debug)]
 pub enum GetKernelVersionError {
     #[error("uname syscall returned errno {0}")]
