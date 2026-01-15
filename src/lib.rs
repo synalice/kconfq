@@ -173,12 +173,24 @@ pub fn require_config() -> Result<Config, RequireConfigFileError> {
     locate_config()?.ok_or(RequireConfigFileError::NotFound)
 }
 
-pub fn get_line(name: &String) -> Result<String, error::GetLineError> {
+/// Find line in the config that contains specified `entry_name`.
+///
+/// # Examples
+///
+/// `entry_name == "CONFIG_CC_VERSION_TEXT"` may return\
+///  `CONFIG_CC_VERSION_TEXT="gcc (GCC) 14.3.0"`
+///
+/// `entry_name == "CONFIG_CC_IS_GCC"` may return\
+///  `CONFIG_CC_IS_GCC=y`
+///
+/// `entry_name == "CONFIG_COMPILE_TEST"` may return\
+///  `# CONFIG_COMPILE_TEST is not set`
+pub fn get_line(entry_name: &String) -> Result<String, error::GetLineError> {
     let config_reader = require_config()?.reader()?;
     let config_reader = BufReader::new(config_reader);
 
-    if is_config_entry_name_valid(name) {
-        let name = name.trim();
+    if is_config_entry_name_valid(entry_name) {
+        let name = entry_name.trim();
 
         let regex_is_not_set = Regex::new(&format!(r"^# {} is not set", regex::escape(name)))?;
         let regex_is_set = Regex::new(&format!(r"^{}=.*$", regex::escape(name)))?;
@@ -193,9 +205,11 @@ pub fn get_line(name: &String) -> Result<String, error::GetLineError> {
         }
     }
 
-    Err(GetLineError::EntryNotFound(name.to_string()))
+    Err(GetLineError::EntryNotFound(entry_name.to_string()))
 }
 
+/// Check that `name` is a valid config name (`CONFIG_FOO_BAR` instead of
+/// `abracadabra` or something else).
 fn is_config_entry_name_valid(name: &str) -> bool {
     static VALID_CONFIG_ENTRY_NAME_REGEX: LazyLock<Regex> = std::sync::LazyLock::new(|| {
         Regex::new(r"^CONFIG_[A-Z0-9_]+$").expect("hardcoded regex should be valid")
