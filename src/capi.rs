@@ -242,7 +242,7 @@ pub unsafe extern "C" fn kconfq_locate_config(
 /// `entry_name == "CONFIG_COMPILE_TEST"` may return\
 ///  `# CONFIG_COMPILE_TEST is not set`
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn find_line(
+pub unsafe extern "C" fn kconfq_find_line(
     entry_name: *const c_char,
     out_line: *mut *mut c_char,
     out_err: *mut *mut KconfqError,
