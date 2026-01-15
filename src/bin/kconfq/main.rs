@@ -27,8 +27,8 @@ enum Commands {
         /// Read kernel config from this path
         path: Option<PathBuf>,
     },
-    /// Get config's line by its name
-    Get { name: String },
+    /// Find config's line by its entry name
+    Find { entry_name: String },
 }
 
 fn main() -> Result<ExitCode> {
@@ -38,7 +38,7 @@ fn main() -> Result<ExitCode> {
         match command {
             Commands::Path => commands::print_config_path()?,
             Commands::Config { path } => commands::print_config(path)?,
-            Commands::Get { name: entry_name } => commands::get_line(entry_name)?,
+            Commands::Find { entry_name } => commands::find_line(entry_name)?,
         }
     }
 

@@ -185,7 +185,7 @@ pub fn require_config() -> Result<Config, RequireConfigFileError> {
 ///
 /// `entry_name == "CONFIG_COMPILE_TEST"` may return\
 ///  `# CONFIG_COMPILE_TEST is not set`
-pub fn get_line(entry_name: &String) -> Result<String, error::GetLineError> {
+pub fn find_line(entry_name: &String) -> Result<String, error::FindLineError> {
     let config_reader = require_config()?.reader()?;
     let config_reader = BufReader::new(config_reader);
 
@@ -205,7 +205,7 @@ pub fn get_line(entry_name: &String) -> Result<String, error::GetLineError> {
         }
     }
 
-    Err(GetLineError::EntryNotFound(entry_name.to_string()))
+    Err(FindLineError::EntryIsMissing(entry_name.to_string()))
 }
 
 /// Check that `name` is a valid config name (`CONFIG_FOO_BAR` instead of

@@ -49,9 +49,9 @@ pub enum GettingConfigReaderError {
 
 #[derive(Debug, Error)]
 #[allow(unused)]
-pub enum GetLineError {
-    #[error("entry \"{0}\" was not found")]
-    EntryNotFound(String),
+pub enum FindLineError {
+    #[error("entry \"{0}\" is missing from the config")]
+    EntryIsMissing(String),
     #[error("failed to get a reader to a kernel config file")]
     ConfigReaderError(#[from] GettingConfigReaderError),
     #[error(transparent)]
