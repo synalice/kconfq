@@ -10,8 +10,8 @@ use nix::errno::Errno;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum GetLinuxKernelVersionError {
-    #[error("uname syscall returned with an errno {0}")]
+pub enum GetKernelVersionError {
+    #[error("uname syscall returned errno {0}")]
     UnameError(Errno),
     #[error("release level of the OS is missing from uname")]
     MissingUnameRelease,
@@ -20,7 +20,7 @@ pub enum GetLinuxKernelVersionError {
 #[derive(Error, Debug)]
 pub enum LocateConfigFileError {
     #[error("error getting linux kernel version")]
-    ErrorGettingLinuxKernelVersion(#[from] GetLinuxKernelVersionError),
+    ErrorGettingLinuxKernelVersion(#[from] GetKernelVersionError),
 }
 
 #[derive(Error, Debug)]

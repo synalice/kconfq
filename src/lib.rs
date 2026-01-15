@@ -252,12 +252,12 @@ fn is_config_entry_name_valid(name: &str) -> bool {
 /// Get the version specified by `uname -r`.
 ///
 /// This treats everything after the `major.minor.patch` triple as build metadata.
-fn get_linux_kernel_version() -> Result<String, GetLinuxKernelVersionError> {
-    let uname = nix::sys::utsname::uname().map_err(GetLinuxKernelVersionError::UnameError)?;
+fn get_linux_kernel_version() -> Result<String, GetKernelVersionError> {
+    let uname = nix::sys::utsname::uname().map_err(GetKernelVersionError::UnameError)?;
 
     Ok(uname
         .release()
         .to_str()
-        .ok_or(GetLinuxKernelVersionError::MissingUnameRelease)?
+        .ok_or(GetKernelVersionError::MissingUnameRelease)?
         .to_owned())
 }
