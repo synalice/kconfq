@@ -29,8 +29,8 @@ pub fn print_config(path: &Option<PathBuf>) -> Result<()> {
     Ok(())
 }
 
-pub fn get_entry(name: &String) -> Result<()> {
-    let line = kconfq::get_entry(name)?;
+pub fn get_line(name: &String) -> Result<()> {
+    let line = kconfq::get_line(name)?;
     println!("{line}");
     Ok(())
 }

@@ -173,7 +173,7 @@ pub fn require_config() -> Result<Config, RequireConfigFileError> {
     locate_config()?.ok_or(RequireConfigFileError::NotFound)
 }
 
-pub fn get_entry(name: &String) -> Result<String, error::GetEntryError> {
+pub fn get_line(name: &String) -> Result<String, error::GetLineError> {
     let config_reader = require_config()?.reader()?;
     let config_reader = BufReader::new(config_reader);
 
@@ -193,7 +193,7 @@ pub fn get_entry(name: &String) -> Result<String, error::GetEntryError> {
         }
     }
 
-    Err(GetEntryError::EntryNotFound(name.to_string()))
+    Err(GetLineError::EntryNotFound(name.to_string()))
 }
 
 fn is_config_entry_name_valid(name: &str) -> bool {

@@ -38,7 +38,7 @@ fn main() -> Result<ExitCode> {
         match command {
             Commands::Path => commands::print_config_path()?,
             Commands::Config { path } => commands::print_config(path)?,
-            Commands::Get { name } => commands::get_entry(name)?,
+            Commands::Get { name: entry_name } => commands::get_line(entry_name)?,
         }
     }
 
