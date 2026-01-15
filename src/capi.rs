@@ -173,7 +173,7 @@ pub unsafe extern "C" fn kconfq_error_cause(err: *const KconfqError) -> *mut Kco
 ///   be `NULL`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_locate_config(
-    out_path: *mut *const c_char,
+    out_path: *mut *mut c_char,
     out_err: *mut *mut KconfqError,
 ) {
     assert!(!out_path.is_null());
@@ -244,7 +244,7 @@ pub unsafe extern "C" fn kconfq_locate_config(
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn find_line(
     entry_name: *const c_char,
-    out_line: *mut *const c_char,
+    out_line: *mut *mut c_char,
     out_err: *mut *mut KconfqError,
 ) {
     assert!(!entry_name.is_null());
