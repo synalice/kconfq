@@ -127,7 +127,7 @@ pub unsafe extern "C" fn kconfq_free_string(ptr: *mut c_char) {
 /// The caller must not assume `*out_path` is initialized unless the return
 /// value is `Success`.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *mut c_char) -> KconfqResult {
+pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> KconfqResult {
     if out_path.is_null() {
         return KconfqResult::KCONFQ_RESULT_NULL_PARAMETER;
     }
