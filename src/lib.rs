@@ -185,7 +185,7 @@ pub fn require_config() -> Result<Config, RequireConfigFileError> {
 ///
 /// `entry_name == "CONFIG_COMPILE_TEST"` may return\
 ///  `# CONFIG_COMPILE_TEST is not set`
-pub fn find_line(entry_name: &String) -> Result<String, error::FindLineError> {
+pub fn find_line(entry_name: &str) -> Result<String, error::FindLineError> {
     let config_reader = require_config()?.reader()?;
     let config_reader = BufReader::new(config_reader);
 
@@ -220,7 +220,7 @@ pub fn find_line(entry_name: &String) -> Result<String, error::FindLineError> {
 ///
 /// `entry_name == "CONFIG_COMPILE_TEST"` may return\
 ///  `# CONFIG_COMPILE_TEST is not set`
-pub fn find_value(entry_name: &String) -> Result<String, error::FindValueError> {
+pub fn find_value(entry_name: &str) -> Result<String, error::FindValueError> {
     let line = find_line(entry_name)?;
 
     if line.starts_with("#") {

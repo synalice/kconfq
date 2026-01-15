@@ -29,13 +29,13 @@ pub fn print_config(path: &Option<PathBuf>) -> Result<()> {
     Ok(())
 }
 
-pub fn find_line(name: &String) -> Result<()> {
+pub fn find_line(name: &str) -> Result<()> {
     let line = kconfq::find_line(name)?;
     println!("{line}");
     Ok(())
 }
 
-pub fn find_value(name: &String) -> Result<()> {
+pub fn find_value(name: &str) -> Result<()> {
     let value = kconfq::find_value(name)?;
     println!("{value}");
     Ok(())
