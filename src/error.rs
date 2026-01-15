@@ -61,3 +61,12 @@ pub enum FindLineError {
     #[error("failed to read kernel config file")]
     FailedToReadConfig(#[from] io::Error),
 }
+
+#[derive(Debug, Error)]
+#[allow(unused)]
+pub enum FindValueError {
+    #[error("failed to find a line with a specified entry")]
+    FailedToFindLine(#[from] FindLineError),
+    #[error("failed to parse value from line {0}")]
+    FailedToParseLine(String),
+}

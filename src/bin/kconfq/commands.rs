@@ -34,3 +34,9 @@ pub fn find_line(name: &String) -> Result<()> {
     println!("{line}");
     Ok(())
 }
+
+pub fn find_value(name: &String) -> Result<()> {
+    let value = kconfq::find_value(name)?;
+    println!("{value}");
+    Ok(())
+}

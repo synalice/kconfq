@@ -208,6 +208,37 @@ pub fn find_line(entry_name: &String) -> Result<String, error::FindLineError> {
     Err(FindLineError::EntryIsMissing(entry_name.to_string()))
 }
 
+/// Same as [`find_line`], but returns only the value of the entry.
+///
+/// # Examples
+///
+/// `entry_name == "CONFIG_CC_VERSION_TEXT"` may return\
+///  `gcc (GCC) 14.3.0`
+///
+/// `entry_name == "CONFIG_CC_IS_GCC"` may return\
+///  `y`
+///
+/// `entry_name == "CONFIG_COMPILE_TEST"` may return\
+///  `# CONFIG_COMPILE_TEST is not set`
+pub fn find_value(entry_name: &String) -> Result<String, error::FindValueError> {
+    let line = find_line(entry_name)?;
+
+    if line.starts_with("#") {
+        return Ok(line);
+    }
+
+    let split_line = line.split("=").collect::<Vec<&str>>();
+
+    if split_line.len() != 2 {
+        return Err(FindValueError::FailedToParseLine(line));
+    }
+
+    Ok(split_line
+        .get(1)
+        .expect("vec should have exactly 2 items")
+        .to_string())
+}
+
 /// Check that `name` is a valid config name (`CONFIG_FOO_BAR` instead of
 /// `abracadabra` or something else).
 fn is_config_entry_name_valid(name: &str) -> bool {
