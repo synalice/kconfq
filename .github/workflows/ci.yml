@@ -116,6 +116,24 @@ jobs:
       - name: Run `cargo doc`
         run: RUSTDOCFLAGS="-Dwarnings" cargo doc
 
+  build-libkconfq-example:
+    name: "build documentation"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: cd to examples directory
+        run: cd examples/libkconfq-simple
+
+      - name: Setup Nix
+        uses: ./.github/actions/nix-setup
+
+      - name: Run `nix build`
+        run: nix build
+
+      - name: Run resulting binary
+        run: ./result/bin/example
+
   run-pre-commit-hooks:
     name: run pre-commit hooks
     runs-on: ubuntu-latest
