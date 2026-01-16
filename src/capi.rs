@@ -101,8 +101,7 @@ pub unsafe extern "C" fn kconfq_free_string(ptr: *const c_char) {
 ///   found at any possible known location. `*out_path` was set to NULL.
 /// - [`KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR`] - Failed to determine
 ///   the running kernel version. `*out_path` was set to NULL.
-/// - [`KconfqResult::KCONFQ_RESULT_NULL_PARAMETER`] - `out_path` itself was
-///   NULL.
+/// - [`KconfqResult::KCONFQ_RESULT_NULL_PARAMETER`] - `out_path` was NULL.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> KconfqResult {
     if out_path.is_null() {
