@@ -117,22 +117,21 @@ jobs:
         run: RUSTDOCFLAGS="-Dwarnings" cargo doc
 
   build-libkconfq-example:
-    name: "build documentation"
+    name: "build libkconfq example"
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
 
-      - name: cd to examples directory
-        run: cd examples/libkconfq-simple
-
-      - name: Setup Nix
-        uses: ./.github/actions/nix-setup
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ github.token }}
 
       - name: Run `nix build`
-        run: nix build
+        run: nix build ./examples/libkconfq-simple/
 
       - name: Run resulting binary
-        run: ./result/bin/example
+        run: ./examples/libkconfq-simple/result/bin/example
 
   run-pre-commit-hooks:
     name: run pre-commit hooks
