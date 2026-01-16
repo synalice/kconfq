@@ -193,8 +193,7 @@ pub fn find_value(
         .to_string())
 }
 
-/// Check that `name` is a valid config name (`CONFIG_FOO_BAR` instead of
-/// `abracadabra` or something else).
+/// Check that `name` is a valid config name (`CONFIG_FOO_BAR` instead of `abracadabra` or something else).
 fn is_config_entry_name_valid(name: &str) -> bool {
     static VALID_CONFIG_ENTRY_NAME_REGEX: LazyLock<Regex> = std::sync::LazyLock::new(|| {
         Regex::new(r"^CONFIG_[A-Z0-9_]+$").expect("hardcoded regex should be valid")
