@@ -12,12 +12,9 @@
 #![allow(clippy::missing_safety_doc)]
 #![allow(non_camel_case_types)]
 
-use std::ffi::{CStr, CString, NulError};
+use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::ptr;
-
-use crate::capi_helpers::make_kconfq_error;
-use crate::error::GetKernelVersionError;
 
 /// Create compile-time null-terminated C string.
 #[macro_export]
@@ -29,56 +26,57 @@ macro_rules! cstr {
     }};
 }
 
+/// Status of the [`kconfq_locate_config`] function.
 #[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum KconfqErrorKind {
-    KCONFQ_ERROR_KIND_UNKNOWN = 0,
-    KCONFQ_ERROR_KIND_UNAME = 1,
-    KCONFQ_ERROR_KIND_MISSING_UNAME_RELEASE = 2,
-    KCONFQ_ERROR_KIND_NUL_BYTE = 3,
-    KCONFQ_ERROR_KIND_NOT_FOUND = 4,
-    KCONFQ_ERROR_KIND_INVALID_UTF8 = 5,
+pub enum KconfqResult {
+    /// Success.
+    KCONFQ_RESULT_SUCCESS = 0,
+    /// Not found.
+    KCONFQ_RESULT_NOT_FOUND = 1,
+    /// Error getting linux kernel version.
+    KCONFQ_RESULT_KERNEL_VERSION_ERROR = 2,
+    /// NULL pointer passed as parameter.
+    KCONFQ_RESULT_NULL_PARAMETER = 3,
+    /// Input to a fucntion is malformed.
+    KCONFQ_RESULT_MALFORMED_INPUT = 4,
+    /// Unknown internal error.
+    KCONFQ_RESULT_UNKNOWN_ERROR = 255,
 }
 
-/// A struct that represents kconfq error.
-#[repr(C)]
-pub struct KconfqError {
-    /// What specific kind of error has happened.
-    pub kind: KconfqErrorKind,
-    /// Owned, C string. May be null if no message.
-    pub message: *mut c_char,
-    /// Owned pointer to cause (or NULL).
-    pub cause: *mut KconfqError,
-}
-
-trait IntoKconfqError {
-    fn into_kconfq_error(self) -> *mut KconfqError;
-}
-
-impl IntoKconfqError for GetKernelVersionError {
-    fn into_kconfq_error(self) -> *mut KconfqError {
-        match self {
-            GetKernelVersionError::UnameError(_) => make_kconfq_error(
-                KconfqErrorKind::KCONFQ_ERROR_KIND_UNAME,
-                self.to_string(),
-                None,
-            ),
-            GetKernelVersionError::MissingUnameRelease => make_kconfq_error(
-                KconfqErrorKind::KCONFQ_ERROR_KIND_MISSING_UNAME_RELEASE,
-                self.to_string(),
-                None,
-            ),
+/// Returns a human-readable string, describing a [`KconfqResult`].
+///
+/// # Parameters
+///
+/// * `result` - A valid [`KconfqResult`] value returned by
+///   [`kconfq_locate_config`].
+///
+/// # Returns
+///
+/// A pointer to a null-terminated, static string describing the status.
+///
+/// The returned pointer:
+///
+/// - Has static lifetime
+/// - Must NOT be freed or modified by the caller
+/// - Is valid for the duration of the program
+///
+/// # Safety
+///
+/// This function assumes `result` is a valid member of the
+/// [`KconfqResult`] enum. Passing any other arbitrary integer results in
+/// an undefined behavior.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const c_char {
+    // SAFETY: all strings are static and null-terminated
+    match result {
+        KconfqResult::KCONFQ_RESULT_SUCCESS => cstr!("success"),
+        KconfqResult::KCONFQ_RESULT_NOT_FOUND => cstr!("not found"),
+        KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR => {
+            cstr!("error getting Linux kernel version")
         }
-    }
-}
-
-impl IntoKconfqError for NulError {
-    fn into_kconfq_error(self) -> *mut KconfqError {
-        make_kconfq_error(
-            KconfqErrorKind::KCONFQ_ERROR_KIND_NUL_BYTE,
-            self.to_string(),
-            None,
-        )
+        KconfqResult::KCONFQ_RESULT_NULL_PARAMETER => cstr!("parameter is a NULL pointer"),
+        KconfqResult::KCONFQ_RESULT_UNKNOWN_ERROR => cstr!("unknown internal error"),
+        KconfqResult::KCONFQ_RESULT_MALFORMED_INPUT => cstr!("input to a fucntion is malformed"),
     }
 }
 
@@ -96,64 +94,6 @@ pub unsafe extern "C" fn kconfq_free_string(ptr: *mut c_char) {
     }
 }
 
-/// Frees an error allocated by this library.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn kconfq_free_error(err: *mut KconfqError) {
-    if err.is_null() {
-        return;
-    }
-
-    unsafe {
-        // Reclaim Box
-        let boxed: Box<KconfqError> = Box::from_raw(err);
-
-        // Free message
-        if !boxed.message.is_null() {
-            drop(CString::from_raw(boxed.message));
-        }
-
-        // Free cause (recursively)
-        if !boxed.cause.is_null() {
-            kconfq_free_error(boxed.cause);
-        }
-
-        drop(boxed);
-    }
-}
-
-/// Get error kind.
-///
-/// Returns [`KconfqErrorKind::KCONFQ_ERROR_KIND_UNKNOWN`] if `err` is NULL.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn kconfq_error_kind(err: *const KconfqError) -> KconfqErrorKind {
-    if err.is_null() {
-        return KconfqErrorKind::KCONFQ_ERROR_KIND_UNKNOWN;
-    }
-    unsafe { (*err).kind }
-}
-
-/// Get error message.
-///
-/// Returns `NULL` if `err` is NULL.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn kconfq_error_message(err: *const KconfqError) -> *const c_char {
-    if err.is_null() {
-        return ptr::null();
-    }
-    unsafe { (*err).message as *const c_char }
-}
-
-/// Get the cause of an error.
-///
-/// Returns `NULL` if `err` is NULL.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn kconfq_error_cause(err: *const KconfqError) -> *mut KconfqError {
-    if err.is_null() {
-        return ptr::null_mut();
-    }
-    unsafe { (*err).cause }
-}
-
 /// Locate the kernel config file and return its path.
 ///
 /// On success, this function allocates a null-terminated C string containing
@@ -162,55 +102,59 @@ pub unsafe extern "C" fn kconfq_error_cause(err: *const KconfqError) -> *mut Kco
 ///
 /// # Ownership
 ///
-/// - `out_path` must be freed by the caller by using [`kconfq_free_string`].
-/// - `out_err` must be freed by the caller by using [`kconfq_free_error`].
+/// Ownership of the returned string is transferred to the caller, who must free
+/// it using [`kconfq_free_string`].
 ///
 /// # Parameters
 ///
 /// - `out_path` - Pointer to a location that will receive the allocated string
-///   on success. Must not be `NULL`.
-/// - `out_err` - Pointer to an error that happened during execution. Must not
-///   be `NULL`.
+///   on success.
+///
+/// # Return value
+///
+/// Returns a [`KconfqResult`] indicating the result of the operation:
+///
+/// - [`KconfqResult::KCONFQ_RESULT_SUCCESS`] - The configuration file was found
+///   and `*out_path` is set to a newly allocated string.
+/// - [`KconfqResult::KCONFQ_RESULT_CONFIG_NOT_FOUND`] - No configuration file
+///   was found. `*out_path` is set to `NULL`.
+/// - [`KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR`] - Failed to determine
+///   the running kernel version. `*out_path` is set to `NULL`.
+/// - [`KconfqResult::KCONFQ_RESULT_NULL_PARAMETER`] - `out_path` itself was
+///   `NULL`.
+/// - [`KconfqResult::KCONFQ_RESULT_UNKNOWN_ERROR`] - An unexpected internal
+///   error occurred.
+///
+/// # Safety
+///
+/// The caller must not assume `*out_path` is initialized unless the return
+/// value is `Success`.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn kconfq_locate_config(
-    out_path: *mut *mut c_char,
-    out_err: *mut *mut KconfqError,
-) {
-    assert!(!out_path.is_null());
-    assert!(!out_err.is_null());
+pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> KconfqResult {
+    if out_path.is_null() {
+        return KconfqResult::KCONFQ_RESULT_NULL_PARAMETER;
+    }
 
     match crate::locate_config() {
         Ok(Some(config)) => match CString::new(config.path.to_string_lossy().as_bytes()) {
             Ok(c_string) => unsafe {
                 *out_path = c_string.into_raw();
-                *out_err = ptr::null_mut();
+                KconfqResult::KCONFQ_RESULT_SUCCESS
             },
-            Err(err) => unsafe {
+            Err(_) => unsafe {
                 *out_path = ptr::null_mut();
-                *out_err = make_kconfq_error(
-                    KconfqErrorKind::KCONFQ_ERROR_KIND_NUL_BYTE,
-                    "config path contains an internal NUL byte".into(),
-                    Some(err.into_kconfq_error()),
-                )
+                KconfqResult::KCONFQ_RESULT_UNKNOWN_ERROR
             },
         },
 
         Ok(None) => unsafe {
             *out_path = ptr::null_mut();
-            *out_err = make_kconfq_error(
-                KconfqErrorKind::KCONFQ_ERROR_KIND_NOT_FOUND,
-                "failed to find kernel config location".into(),
-                None,
-            )
+            KconfqResult::KCONFQ_RESULT_NOT_FOUND
         },
 
-        Err(crate::error::LocateConfigFileError::ErrorGettingLinuxKernelVersion(err)) => unsafe {
+        Err(crate::error::LocateConfigFileError::GettingLinuxKernelVersion(_)) => unsafe {
             *out_path = ptr::null_mut();
-            *out_err = make_kconfq_error(
-                KconfqErrorKind::KCONFQ_ERROR_KIND_NOT_FOUND,
-                "failed to find kernel config location".into(),
-                Some(err.into_kconfq_error()),
-            )
+            KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR
         },
     }
 }
@@ -219,17 +163,15 @@ pub unsafe extern "C" fn kconfq_locate_config(
 ///
 /// # Ownership
 ///
-/// - `out_line` must be freed by the caller by using [`kconfq_free_string`].
-/// - `out_err` must be freed by the caller by using [`kconfq_free_error`].
+/// Ownership of the returned string is transferred to the caller, who must free
+/// it using [`kconfq_free_string`].
 ///
 /// # Parameters
 ///
 /// - `entry_name` - Pointer to a null-terminated C string specifying the name
-///   of the entry to search for. Must not be `NULL`.
+///   of the entry to search for. The pointer must not be `NULL`.
 /// - `out_line` - Pointer to a location that will receive the allocated string
-///   on success. Must not be `NULL`.
-/// - `out_err` - Pointer to an error that happened during execution. Must not
-///   be `NULL`.
+///   on success.
 ///
 /// # Examples
 ///
@@ -242,14 +184,13 @@ pub unsafe extern "C" fn kconfq_locate_config(
 /// `entry_name == "CONFIG_COMPILE_TEST"` may return\
 ///  `# CONFIG_COMPILE_TEST is not set`
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn kconfq_find_line(
+pub unsafe extern "C" fn find_line(
     entry_name: *const c_char,
-    out_line: *mut *mut c_char,
-    out_err: *mut *mut KconfqError,
-) {
-    assert!(!entry_name.is_null());
-    assert!(!out_line.is_null());
-    assert!(!out_err.is_null());
+    out_line: *mut *const c_char,
+) -> KconfqResult {
+    if entry_name.is_null() {
+        return KconfqResult::KCONFQ_RESULT_NULL_PARAMETER;
+    }
 
     let entry_name = unsafe { CStr::from_ptr(entry_name) };
     let _entry_name = match entry_name.to_str() {
@@ -257,17 +198,14 @@ pub unsafe extern "C" fn kconfq_find_line(
         Err(_) => {
             unsafe {
                 *out_line = ptr::null_mut();
-                *out_err = make_kconfq_error(
-                    KconfqErrorKind::KCONFQ_ERROR_KIND_INVALID_UTF8,
-                    "entry_name is not a valid UTF-8 string".into(),
-                    None,
-                );
-                return;
+                return KconfqResult::KCONFQ_RESULT_MALFORMED_INPUT;
             };
         }
     };
 
     // let a = crate::find_line(entry_name)
+
+    KconfqResult::KCONFQ_RESULT_SUCCESS
 }
 
 //   ⠀⠀⠀⠀⢠⡶⠚⢷⣤⡀⠀⠀⠀⠀⠀⣲⡶⠛⠻⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀

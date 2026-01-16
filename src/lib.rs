@@ -14,9 +14,6 @@ use error::*;
 
 #[cfg(feature = "capi")]
 pub mod capi;
-#[cfg(feature = "capi")]
-pub mod capi_helpers;
-
 pub mod error;
 
 /// A kernel config struct.
