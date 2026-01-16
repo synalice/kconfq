@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
 use std::path::PathBuf;
