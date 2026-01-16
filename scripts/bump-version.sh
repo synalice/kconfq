@@ -23,7 +23,7 @@ prek run --all-files
 
 TAG="v$1"
 
-git checkout dev
+git checkout main
 cargo set-version $1
 git add -A
 git commit --no-verify -m "Bump version to $TAG"
