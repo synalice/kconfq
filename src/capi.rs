@@ -83,7 +83,7 @@ pub enum KconfqResult {
 /// an undefined behavior.
 #[unsafe(no_mangle)]
 #[rustfmt::skip]
-pub extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const c_char {
+pub unsafe extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const c_char {
     match result {
         KconfqResult::KCONFQ_RESULT_SUCCESS => cstr!("success"),
         KconfqResult::KCONFQ_RESULT_NOT_FOUND => cstr!("not found"),
