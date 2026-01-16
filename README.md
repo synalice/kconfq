@@ -68,6 +68,21 @@ an example of how this would look like in Meson
 kconfq = dependency('kconfq')
 ```
 
+### Example
+
+You can see the example of how to use the C-API in the
+[examples/libkconfq-simple/](examples/libkconfq-simple/) directory.
+
+To build and run the example, run the following commands:
+
+```bash
+cd examples/libkconfq-simple/
+nix develop
+meson setup builddir/
+meson compile -C builddir/
+./builddir/example
+```
+
 ### Building from source
 
 To build and install library from source you have to use
