@@ -30,13 +30,23 @@ pub fn print_config(path: &Option<PathBuf>) -> Result<()> {
 }
 
 pub fn find_line(name: &str) -> Result<()> {
-    let line = kconfq::find_line(name)?;
+    let config = require_config()?;
+    let config_reader = config.reader()?;
+
+    let line = kconfq::find_line(name, config_reader)?;
+
     println!("{line}");
+
     Ok(())
 }
 
 pub fn find_value(name: &str) -> Result<()> {
-    let value = kconfq::find_value(name)?;
+    let config = require_config()?;
+    let config_reader = config.reader()?;
+
+    let value = kconfq::find_value(name, config_reader)?;
+
     println!("{value}");
+
     Ok(())
 }

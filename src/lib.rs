@@ -67,12 +67,12 @@ impl Config {
     }
 
     /// Get a reader to a an underlying file.
-    pub fn reader(&self) -> Result<Box<dyn Read>, GettingConfigReaderError> {
+    pub fn reader(&self) -> Result<Box<dyn BufRead>, GettingConfigReaderError> {
         let config_file =
             File::open(self.path()).map_err(GettingConfigReaderError::FailedToOpenFile)?;
 
         if self.is_gzip()? {
-            Ok(Box::new(GzDecoder::new(config_file)))
+            Ok(Box::new(BufReader::new(GzDecoder::new(config_file))))
         } else {
             Ok(Box::new(BufReader::new(config_file)))
         }
@@ -137,10 +137,10 @@ pub fn require_config() -> Result<Config, RequireConfigError> {
 /// - `CONFIG_FOO=y`
 /// - `CONFIG_FOO="something something"`
 /// - `# CONFIG_FOO is not set`
-pub fn find_line(entry_name: &str) -> Result<String, error::FindLineError> {
-    let config_reader = require_config()?.reader()?;
-    let config_reader = BufReader::new(config_reader);
-
+pub fn find_line(
+    entry_name: &str,
+    config_reader: impl BufRead,
+) -> Result<String, error::FindLineError> {
     if is_config_entry_name_valid(entry_name) {
         let name = entry_name.trim();
 
@@ -167,8 +167,11 @@ pub fn find_line(entry_name: &str) -> Result<String, error::FindLineError> {
 /// - `y`
 /// - `something something`
 /// - `# CONFIG_COMPILE_TEST is not set`
-pub fn find_value(entry_name: &str) -> Result<String, error::FindValueError> {
-    let line = find_line(entry_name)?;
+pub fn find_value(
+    entry_name: &str,
+    config_reader: impl BufRead,
+) -> Result<String, error::FindValueError> {
+    let line = find_line(entry_name, config_reader)?;
 
     if line.starts_with("#") {
         return Ok(line);

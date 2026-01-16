@@ -52,20 +52,16 @@ pub enum GettingConfigReaderError {
 pub enum FindLineError {
     #[error("entry \"{0}\" is missing from the config")]
     EntryIsMissing(String),
-    #[error("failed to get a reader to a kernel config file")]
-    FailedToGetReader(#[from] GettingConfigReaderError),
-    #[error(transparent)]
-    FailedToFindConfig(#[from] RequireConfigError),
     #[error("entry name is malformed")]
     MalformedEntryName(#[from] regex::Error),
-    #[error("failed to read kernel config file")]
-    FailedToReadConfig(#[from] io::Error),
+    #[error("failed to read kernel config file line")]
+    FailedToReadConfigLine(#[from] io::Error),
 }
 
 #[derive(Debug, Error)]
 #[allow(unused)]
 pub enum FindValueError {
-    #[error("failed to find a line with a specified entry")]
+    #[error(transparent)]
     FailedToFindLine(#[from] FindLineError),
     #[error("failed to parse value from line {0}")]
     FailedToParseLine(String),
