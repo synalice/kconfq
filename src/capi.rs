@@ -73,8 +73,10 @@ kconfq_results! {
     KCONFQ_RESULT_KERNEL_VERSION_ERROR = 2 => "error getting Linux kernel version",
     /// Parameter is a NULL pointer.
     KCONFQ_RESULT_NULL_PARAMETER = 3 => "parameter is a NULL pointer",
-    /// Input to a function is malformed.
-    KCONFQ_RESULT_MALFORMED_INPUT = 4 => "input to a function is malformed",
+    /// Value of the function's argument is malformed.
+    KCONFQ_RESULT_MALFORMED_ARGUMENT_VALUE = 4 => "value of the function's argument is malformed",
+    /// Path to config is not a valid UTF-8.
+    KCONFQ_RESULT_NON_UTF8_PATH_TO_CONFIG = 5 => "path to config is not a valid UTF-8",
     /// Unknown internal error.
     KCONFQ_RESULT_UNKNOWN_ERROR = 255 => "unknown internal error",
 }
@@ -97,11 +99,11 @@ pub unsafe extern "C" fn kconfq_free_string(ptr: *const c_char) {
 ///
 /// # Parameters
 ///
-/// - `out_path` - Pointer to a location that will receive the allocated and
-///   null-terminated string on success. Caller must free it using
+/// - `out_path` - Pointer to a location that will receive the allocated
+///   constant null-terminated string on success. Caller must free it using
 ///   [`kconfq_free_string`]. Must NOT be `NULL`.
 ///
-/// # Return value
+/// # Return values
 ///
 /// - [`KconfqResult::KCONFQ_RESULT_SUCCESS`] - Configuration file was found and
 ///   `*out_path` was set to a newly allocated string.
@@ -111,12 +113,14 @@ pub unsafe extern "C" fn kconfq_free_string(ptr: *const c_char) {
 ///   the running kernel version. `*out_path` was set to `NULL`.
 /// - [`KconfqResult::KCONFQ_RESULT_NULL_PARAMETER`] - `out_path` itself was
 ///   `NULL`.
-/// - [`KconfqResult::KCONFQ_RESULT_UNKNOWN_ERROR`] - An unexpected internal
-///   error has occurred.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> KconfqResult {
     if out_path.is_null() {
         return KconfqResult::KCONFQ_RESULT_NULL_PARAMETER;
+    }
+
+    unsafe {
+        *out_path = ptr::null_mut();
     }
 
     match crate::locate_config() {
@@ -125,43 +129,33 @@ pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> K
                 *out_path = c_string.into_raw();
                 KconfqResult::KCONFQ_RESULT_SUCCESS
             },
-            Err(_) => unsafe {
-                *out_path = ptr::null_mut();
-                KconfqResult::KCONFQ_RESULT_UNKNOWN_ERROR
-            },
+            Err(_) => KconfqResult::KCONFQ_RESULT_NON_UTF8_PATH_TO_CONFIG,
         },
 
-        Ok(None) => unsafe {
-            *out_path = ptr::null_mut();
-            KconfqResult::KCONFQ_RESULT_NOT_FOUND
-        },
-
-        Err(crate::error::LocateConfigError::FailedToGetLinuxKernelVersion(_)) => unsafe {
-            *out_path = ptr::null_mut();
+        Ok(None) => KconfqResult::KCONFQ_RESULT_NOT_FOUND,
+        Err(crate::error::LocateConfigError::FailedToGetLinuxKernelVersion(_)) => {
             KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR
-        },
+        }
     }
 }
 
 /// Find line in the config that contains specified `entry_name`.
 ///
-/// # Ownership
-///
-/// Ownership of the returned string is transferred to the caller, who must free
-/// it using [`kconfq_free_string`].
-///
 /// # Parameters
 ///
 /// - `entry_name` - Pointer to a null-terminated C string specifying the name
 ///   of the entry to search for. The pointer must not be `NULL`.
-/// - `out_line` - Pointer to a location that will receive the allocated string
-///   on success.
+/// - `out_line` - Pointer to a location that will receive the allocated
+///   constant null-terminated string on success. Caller must free it using
+///   [`kconfq_free_string`]. Must NOT be `NULL`.
 ///
-/// # Examples
+/// # Return value examples
 ///
-/// - `entry_name="CONFIG_CC_IS_GCC"` may return `CONFIG_CC_IS_GCC=y`
-/// - `entry_name="CONFIG_CC_VERSION_TEXT"` may return `CONFIG_CC_VERSION_TEXT="gcc (GCC) 14.3.0"`
-/// - `entry_name="CONFIG_COMPILE_TEST"` may return `# CONFIG_COMPILE_TEST is not set`
+/// - `CONFIG_FOO=y`
+/// - `CONFIG_FOO=m`
+/// - `CONFIG_FOO=12345`
+/// - `CONFIG_FOO="something something"`
+/// - `# CONFIG_FOO is not set`
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_find_line(
     entry_name: *const c_char,
@@ -171,14 +165,15 @@ pub unsafe extern "C" fn kconfq_find_line(
         return KconfqResult::KCONFQ_RESULT_NULL_PARAMETER;
     }
 
+    unsafe {
+        *out_line = ptr::null_mut();
+    }
+
     let entry_name = unsafe { CStr::from_ptr(entry_name) };
     let _entry_name = match entry_name.to_str() {
         Ok(str) => str,
         Err(_) => {
-            unsafe {
-                *out_line = ptr::null_mut();
-                return KconfqResult::KCONFQ_RESULT_MALFORMED_INPUT;
-            };
+            return KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT_VALUE;
         }
     };
 

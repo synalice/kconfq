@@ -135,6 +135,8 @@ pub fn require_config() -> Result<Config, RequireConfigError> {
 /// # Return value examples
 ///
 /// - `CONFIG_FOO=y`
+/// - `CONFIG_FOO=m`
+/// - `CONFIG_FOO=12345`
 /// - `CONFIG_FOO="something something"`
 /// - `# CONFIG_FOO is not set`
 pub fn find_line(
@@ -165,8 +167,10 @@ pub fn find_line(
 /// # Return value examples
 ///
 /// - `y`
+/// - `m`
+/// - `12345`
 /// - `something something`
-/// - `# CONFIG_COMPILE_TEST is not set`
+/// - `# CONFIG_FOO is not set`
 pub fn find_value(
     entry_name: &str,
     config_reader: impl BufRead,
