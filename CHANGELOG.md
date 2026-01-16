@@ -10,46 +10,61 @@ Versioning].
 
 ## [Unreleased]
 
-## [0.1.3] - 2026-01-15
+## [0.1.3] - 2026-01-17
 
-### kconfq (Rust CLI)
+### kconfq (CLI)
 
 #### Added
 
 - Sub-command `find` to print config's line by its entry name.
 - Sub-command `find-value` to print value of the config's entry.
 
-### kconfq (Rust library)
+### kconfq (library)
 
 #### Added
 
 - Function `find_line` to find config's line by its entry name.
 - Function `find_value` to find value of the config's entry.
+- Error `FindLineError`.
+- Error `FindValueError`.
+
+#### Changed
+
+- Rename `GetLinuxKernelVersionError` to `GetKernelVersionError`.
+- Rename `GetLinuxKernelVersionError::MissingUnameRelease` to
+  `GetKernelVersionError::ReleaseMissingFromUname`.
+- Rename `LocateConfigFileError` to `LocateConfigError`.
+- Rename `LocateConfigFileError::ErrorGettingLinuxKernelVersion` to
+  `LocateConfigError::FailedToGetLinuxKernelVersion`.
+- Rename `RequireConfigFileError` to `RequireConfigError`.
+- Rename `RequireConfigFileError::Locate` to
+  `RequireConfigError::FailedToLocate`.
+- Rename `IsGzipError::FailedToReadMagic` to
+  `IsGzipError::FailedToReadFileMagic`.
 
 ### libkconfq (C-API)
 
 #### Added
 
+- Opaque struct `KconfConfig`.
+- Function `kconfq_config_path` to get a path to the config's underlying file.
 - Function `kconfq_find_line` to find config's line by its entry name.
-- Function `kconfq_free_error` to free returned error.
-- Function `kconfq_error_kind` to get errors's kind.
-- Function `kconfq_error_message` to get error's message.
-- Function `kconfq_error_cause` to get errors's cause.
+- Function `kconfq_find_value` to find value of the config's entry.
 
 #### Changed
 
-- Replace error handling by return values with error handling by out parameters.
+- `kconfq_locate_config` returns `KconfqConfig` instead of path to config file.
 
 ## [0.1.2] - 2026-01-14
 
-### kconfq (Rust CLI)
+### kconfq (CLI)
 
 #### Added
 
 - Sub-command `path` to print path to kernel config.
 - Sub-command `config` to print the whole kernel config.
 
-### kconfq (Rust library)
+### kconfq (library)
 
 #### Added
 
