@@ -28,6 +28,7 @@ prek run --all-files
 
 TAG="v$1"
 
+git checkout dev
 cargo set-version $1
 git add -A
 git commit --no-verify -m "Bump version to $TAG"
@@ -35,3 +36,6 @@ git tag -a "$TAG" -m "Release $TAG"
 git push origin tag "$TAG"
 git push origin
 cargo publish
+git checkout main
+git rebase dev
+git push origin main
