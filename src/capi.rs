@@ -136,7 +136,7 @@ pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> K
             KconfqResult::KCONFQ_RESULT_NOT_FOUND
         },
 
-        Err(crate::error::LocateConfigFileError::GettingLinuxKernelVersion(_)) => unsafe {
+        Err(crate::error::LocateConfigError::FailedToGetLinuxKernelVersion(_)) => unsafe {
             *out_path = ptr::null_mut();
             KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR
         },

@@ -14,19 +14,19 @@ pub enum GetKernelVersionError {
     #[error("uname syscall returned errno {0}")]
     UnameError(Errno),
     #[error("release level of the OS is missing from uname")]
-    MissingUnameRelease,
+    ReleaseMissingFromUname,
 }
 
 #[derive(Error, Debug)]
-pub enum LocateConfigFileError {
-    #[error("error getting linux kernel version")]
-    GettingLinuxKernelVersion(#[from] GetKernelVersionError),
+pub enum LocateConfigError {
+    #[error("failed to get linux kernel version")]
+    FailedToGetLinuxKernelVersion(#[from] GetKernelVersionError),
 }
 
 #[derive(Error, Debug)]
-pub enum RequireConfigFileError {
+pub enum RequireConfigError {
     #[error("failed to locate kernel config file")]
-    Locate(#[from] LocateConfigFileError),
+    FailedToLocate(#[from] LocateConfigError),
     #[error("kernel config file not found in any known location")]
     NotFound,
 }
@@ -53,9 +53,9 @@ pub enum FindLineError {
     #[error("entry \"{0}\" is missing from the config")]
     EntryIsMissing(String),
     #[error("failed to get a reader to a kernel config file")]
-    ConfigReaderError(#[from] GettingConfigReaderError),
+    FailedToGetReader(#[from] GettingConfigReaderError),
     #[error(transparent)]
-    FailedToFindConfig(#[from] RequireConfigFileError),
+    FailedToFindConfig(#[from] RequireConfigError),
     #[error("entry name is malformed")]
     MalformedEntryName(#[from] regex::Error),
     #[error("failed to read kernel config file")]
