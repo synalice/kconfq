@@ -75,7 +75,7 @@ pub extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const c_char 
 ///
 /// # Safety
 ///
-/// `ptr` must be a pointer previously returned by this library, or `NULL`.
+/// `ptr` must be a pointer previously returned by this library, or NULL.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_free_string(ptr: *const c_char) {
     if !ptr.is_null() {
@@ -91,18 +91,18 @@ pub unsafe extern "C" fn kconfq_free_string(ptr: *const c_char) {
 ///
 /// - `out_path` - Pointer to a location that will receive the allocated
 ///   constant null-terminated string on success. Caller must free it using
-///   [`kconfq_free_string`]. Must NOT be `NULL`.
+///   [`kconfq_free_string`]. Must NOT be NULL.
 ///
 /// # Return values
 ///
 /// - [`KconfqResult::KCONFQ_RESULT_SUCCESS`] - Configuration file was found and
 ///   `*out_path` was set to a newly allocated string.
 /// - [`KconfqResult::KCONFQ_RESULT_NOT_FOUND`] - No configuration file was
-///   found at any possible known location. `*out_path` was set to `NULL`.
+///   found at any possible known location. `*out_path` was set to NULL.
 /// - [`KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR`] - Failed to determine
-///   the running kernel version. `*out_path` was set to `NULL`.
+///   the running kernel version. `*out_path` was set to NULL.
 /// - [`KconfqResult::KCONFQ_RESULT_NULL_PARAMETER`] - `out_path` itself was
-///   `NULL`.
+///   NULL.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> KconfqResult {
     if out_path.is_null() {
@@ -134,10 +134,10 @@ pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> K
 /// # Parameters
 ///
 /// - `entry_name` - Pointer to a null-terminated C string specifying the name
-///   of the entry to search for. The pointer must not be `NULL`.
+///   of the entry to search for. The pointer must not be NULL.
 /// - `out_line` - Pointer to a location that will receive the allocated
 ///   constant null-terminated string on success. Caller must free it using
-///   [`kconfq_free_string`]. Must NOT be `NULL`.
+///   [`kconfq_free_string`]. Must NOT be NULL.
 ///
 /// # Return value examples
 ///
