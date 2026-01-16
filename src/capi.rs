@@ -26,16 +26,19 @@ macro_rules! cstr {
 }
 
 /// Generate enum + FFI-safe strerror function + doc comments
-///
-/// Usage: `<ENUM_MEMBER_NAME> = <integer_code> => "<description>" => "<Doc comment.>"`
 macro_rules! kconfq_results {
-    ($($name:ident = $val:expr => $msg:literal => $doc:literal),+ $(,)?) => {
+    (
+        $(
+            $(#[$meta:meta])*
+            $name:ident = $val:expr => $msg:literal
+        ),+ $(,)?
+    ) => {
         /// Result of the function's operation.
         #[repr(C)]
         #[derive(Copy, Clone, Debug, Eq, PartialEq)]
         pub enum KconfqResult {
             $(
-                #[doc = $doc]
+                $(#[$meta])*
                 $name = $val,
             )+
         }
@@ -53,8 +56,7 @@ macro_rules! kconfq_results {
         /// [`KconfqResult`] enum. Passing any other arbitrary integer results in
         /// an undefined behavior.
         #[unsafe(no_mangle)]
-        pub extern "C" fn kconfq_result_strerror(result: KconfqResult)
-            -> *const std::os::raw::c_char {
+        pub extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const std::os::raw::c_char {
             match result {
                 $(KconfqResult::$name => cstr!($msg),)+
             }
@@ -63,12 +65,18 @@ macro_rules! kconfq_results {
 }
 
 kconfq_results! {
-    KCONFQ_RESULT_SUCCESS = 0 => "success" => "Success.",
-    KCONFQ_RESULT_NOT_FOUND = 1 => "not found" => "Not found.",
-    KCONFQ_RESULT_KERNEL_VERSION_ERROR = 2 => "error getting Linux kernel version" => "Error getting Linux kernel version.",
-    KCONFQ_RESULT_NULL_PARAMETER = 3 => "parameter is a NULL pointer" => "Parameter is a NULL pointer.",
-    KCONFQ_RESULT_MALFORMED_INPUT = 4 => "input to a function is malformed" => "Input to a function is malformed.",
-    KCONFQ_RESULT_UNKNOWN_ERROR = 255 => "unknown internal error" => "Unknown internal error.",
+    /// Success.
+    KCONFQ_RESULT_SUCCESS = 0 => "success",
+    /// Not found.
+    KCONFQ_RESULT_NOT_FOUND = 1 => "not found",
+    /// Error getting Linux kernel version.
+    KCONFQ_RESULT_KERNEL_VERSION_ERROR = 2 => "error getting Linux kernel version",
+    /// Parameter is a NULL pointer.
+    KCONFQ_RESULT_NULL_PARAMETER = 3 => "parameter is a NULL pointer",
+    /// Input to a function is malformed.
+    KCONFQ_RESULT_MALFORMED_INPUT = 4 => "input to a function is malformed",
+    /// Unknown internal error.
+    KCONFQ_RESULT_UNKNOWN_ERROR = 255 => "unknown internal error",
 }
 
 /// Frees a string allocated by this library.
