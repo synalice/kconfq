@@ -4,10 +4,10 @@
 
 //! C-API that will be compiled to `cdynlib` to be used from C.
 //!
-//! # Important
+//! # Warning
 //!
-//! This module is basically a C code written in Rust. All of this is extremely
-//! unsafe and should be audited very carefully.
+//! This module is basically a C code written in Rust. All of this is **extremely
+//! unsafe** and should be approached very carefully.
 
 #![allow(clippy::missing_safety_doc)]
 #![allow(non_camel_case_types)]
@@ -42,20 +42,10 @@ macro_rules! kconfq_results {
 
         /// Returns a human-readable string, describing a [`KconfqResult`].
         ///
-        /// # Parameters
-        ///
-        /// * `result` - A valid [`KconfqResult`] value returned by
-        ///   [`kconfq_locate_config`].
-        ///
         /// # Returns
         ///
         /// A pointer to a null-terminated, static string describing the status.
-        ///
-        /// The returned pointer:
-        ///
-        /// - Has static lifetime
-        /// - Must NOT be freed or modified by the caller
-        /// - Is valid for the duration of the program
+        /// Must NOT be freed or modified by the caller.
         ///
         /// # Safety
         ///
@@ -74,11 +64,11 @@ macro_rules! kconfq_results {
 
 kconfq_results! {
     KCONFQ_RESULT_SUCCESS = 0 => "success" => "Success.",
-    KCONFQ_RESULT_NOT_FOUND = 1 => "not found" => "Not Found.",
-    KCONFQ_RESULT_KERNEL_VERSION_ERROR = 2 => "error getting Linux kernel version" => "Error Getting Linux Kernel Version.",
-    KCONFQ_RESULT_NULL_PARAMETER = 3 => "parameter is a NULL pointer" => "Parameter Is A NULL Pointer.",
-    KCONFQ_RESULT_MALFORMED_INPUT = 4 => "input to a function is malformed" => "Input To A Function Is Malformed.",
-    KCONFQ_RESULT_UNKNOWN_ERROR = 255 => "unknown internal error" => "Unknown Internal Error.",
+    KCONFQ_RESULT_NOT_FOUND = 1 => "not found" => "Not found.",
+    KCONFQ_RESULT_KERNEL_VERSION_ERROR = 2 => "error getting Linux kernel version" => "Error getting Linux kernel version.",
+    KCONFQ_RESULT_NULL_PARAMETER = 3 => "parameter is a NULL pointer" => "Parameter is a NULL pointer.",
+    KCONFQ_RESULT_MALFORMED_INPUT = 4 => "input to a function is malformed" => "Input to a function is malformed.",
+    KCONFQ_RESULT_UNKNOWN_ERROR = 255 => "unknown internal error" => "Unknown internal error.",
 }
 
 /// Frees a string allocated by this library.
@@ -87,49 +77,34 @@ kconfq_results! {
 ///
 /// `ptr` must be a pointer previously returned by this library, or `NULL`.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn kconfq_free_string(ptr: *mut c_char) {
+pub unsafe extern "C" fn kconfq_free_string(ptr: *const c_char) {
     if !ptr.is_null() {
         unsafe {
-            drop(CString::from_raw(ptr));
+            drop(CString::from_raw(ptr as *mut i8));
         }
     }
 }
 
-/// Locate the kernel config file and return its path.
-///
-/// On success, this function allocates a null-terminated C string containing
-/// the path to the configuration file and stores a pointer to immutable
-/// characters in `*out_path`.
-///
-/// # Ownership
-///
-/// Ownership of the returned string is transferred to the caller, who must free
-/// it using [`kconfq_free_string`].
+/// Locate the kernel config file and return path to it.
 ///
 /// # Parameters
 ///
-/// - `out_path` - Pointer to a location that will receive the allocated string
-///   on success.
+/// - `out_path` - Pointer to a location that will receive the allocated and
+///   null-terminated string on success. Caller must free it using
+///   [`kconfq_free_string`]. Must NOT be `NULL`.
 ///
 /// # Return value
 ///
-/// Returns a [`KconfqResult`] indicating the result of the operation:
-///
-/// - [`KconfqResult::KCONFQ_RESULT_SUCCESS`] - The configuration file was found
-///   and `*out_path` is set to a newly allocated string.
-/// - [`KconfqResult::KCONFQ_RESULT_NOT_FOUND`] - No configuration file
-///   was found. `*out_path` is set to `NULL`.
+/// - [`KconfqResult::KCONFQ_RESULT_SUCCESS`] - Configuration file was found and
+///   `*out_path` was set to a newly allocated string.
+/// - [`KconfqResult::KCONFQ_RESULT_NOT_FOUND`] - No configuration file was
+///   found at any possible known location. `*out_path` was set to `NULL`.
 /// - [`KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR`] - Failed to determine
-///   the running kernel version. `*out_path` is set to `NULL`.
+///   the running kernel version. `*out_path` was set to `NULL`.
 /// - [`KconfqResult::KCONFQ_RESULT_NULL_PARAMETER`] - `out_path` itself was
 ///   `NULL`.
 /// - [`KconfqResult::KCONFQ_RESULT_UNKNOWN_ERROR`] - An unexpected internal
-///   error occurred.
-///
-/// # Safety
-///
-/// The caller must not assume `*out_path` is initialized unless the return
-/// value is `Success`.
+///   error has occurred.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> KconfqResult {
     if out_path.is_null() {
@@ -176,14 +151,9 @@ pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> K
 ///
 /// # Examples
 ///
-/// `entry_name == "CONFIG_CC_VERSION_TEXT"` may return\
-///  `CONFIG_CC_VERSION_TEXT="gcc (GCC) 14.3.0"`
-///
-/// `entry_name == "CONFIG_CC_IS_GCC"` may return\
-///  `CONFIG_CC_IS_GCC=y`
-///
-/// `entry_name == "CONFIG_COMPILE_TEST"` may return\
-///  `# CONFIG_COMPILE_TEST is not set`
+/// - `entry_name="CONFIG_CC_IS_GCC"` may return `CONFIG_CC_IS_GCC=y`
+/// - `entry_name="CONFIG_CC_VERSION_TEXT"` may return `CONFIG_CC_VERSION_TEXT="gcc (GCC) 14.3.0"`
+/// - `entry_name="CONFIG_COMPILE_TEST"` may return `# CONFIG_COMPILE_TEST is not set`
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_find_line(
     entry_name: *const c_char,

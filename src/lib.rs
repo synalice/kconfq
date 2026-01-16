@@ -141,7 +141,7 @@ impl Config {
     }
 }
 
-/// Search through all known config locations and return a path to it.
+/// Locate the kernel config file and return path to it.
 ///
 /// May not find a config an return `Ok(None)`
 pub fn locate_config() -> Result<Option<Config>, LocateConfigFileError> {
