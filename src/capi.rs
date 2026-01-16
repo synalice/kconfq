@@ -25,60 +25,50 @@ macro_rules! cstr {
     }};
 }
 
-/// Generate enum + FFI-safe strerror function + doc comments
-macro_rules! kconfq_results {
-    (
-        $(
-            $(#[$meta:meta])*
-            $name:ident = $val:expr => $msg:literal
-        ),+ $(,)?
-    ) => {
-        /// Result of the function's operation.
-        #[repr(C)]
-        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-        pub enum KconfqResult {
-            $(
-                $(#[$meta])*
-                $name = $val,
-            )+
-        }
-
-        /// Returns a human-readable string, describing a [`KconfqResult`].
-        ///
-        /// # Returns
-        ///
-        /// A pointer to a null-terminated, static string describing the status.
-        /// Must NOT be freed or modified by the caller.
-        ///
-        /// # Safety
-        ///
-        /// This function assumes `result` is a valid member of the
-        /// [`KconfqResult`] enum. Passing any other arbitrary integer results in
-        /// an undefined behavior.
-        #[unsafe(no_mangle)]
-        pub extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const std::os::raw::c_char {
-            match result {
-                $(KconfqResult::$name => cstr!($msg),)+
-            }
-        }
-    };
+/// Result of the function's operation.
+#[repr(C)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum KconfqResult {
+    /// Success.
+    KCONFQ_RESULT_SUCCESS = 0,
+    /// Not found.
+    KCONFQ_RESULT_NOT_FOUND = 1,
+    /// Error getting Linux kernel version.
+    KCONFQ_RESULT_KERNEL_VERSION_ERROR = 2,
+    /// Parameter is a NULL pointer.
+    KCONFQ_RESULT_NULL_PARAMETER = 3,
+    /// Value of the function's argument is malformed.
+    KCONFQ_RESULT_MALFORMED_ARGUMENT_VALUE = 4,
+    /// Path to config is not a valid UTF-8.
+    KCONFQ_RESULT_NON_UTF8_PATH_TO_CONFIG = 5,
+    /// Unknown internal error.
+    KCONFQ_RESULT_UNKNOWN_ERROR = 255,
 }
 
-kconfq_results! {
-    /// Success.
-    KCONFQ_RESULT_SUCCESS = 0 => "success",
-    /// Not found.
-    KCONFQ_RESULT_NOT_FOUND = 1 => "not found",
-    /// Error getting Linux kernel version.
-    KCONFQ_RESULT_KERNEL_VERSION_ERROR = 2 => "error getting Linux kernel version",
-    /// Parameter is a NULL pointer.
-    KCONFQ_RESULT_NULL_PARAMETER = 3 => "parameter is a NULL pointer",
-    /// Value of the function's argument is malformed.
-    KCONFQ_RESULT_MALFORMED_ARGUMENT_VALUE = 4 => "value of the function's argument is malformed",
-    /// Path to config is not a valid UTF-8.
-    KCONFQ_RESULT_NON_UTF8_PATH_TO_CONFIG = 5 => "path to config is not a valid UTF-8",
-    /// Unknown internal error.
-    KCONFQ_RESULT_UNKNOWN_ERROR = 255 => "unknown internal error",
+/// Returns a human-readable string, describing a [`KconfqResult`].
+///
+/// # Returns
+///
+/// A pointer to a null-terminated, static string describing the status.
+/// Must NOT be freed or modified by the caller.
+///
+/// # Safety
+///
+/// This function assumes `result` is a valid member of the
+/// [`KconfqResult`] enum. Passing any other arbitrary integer results in
+/// an undefined behavior.
+#[unsafe(no_mangle)]
+#[rustfmt::skip]
+pub extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const c_char {
+    match result {
+        KconfqResult::KCONFQ_RESULT_SUCCESS => cstr!("success"),
+        KconfqResult::KCONFQ_RESULT_NOT_FOUND => cstr!("not found"),
+        KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR => cstr!("error getting Linux kernel version"),
+        KconfqResult::KCONFQ_RESULT_NULL_PARAMETER => cstr!("parameter is a NULL pointer"),
+        KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT_VALUE => cstr!("value of the function's argument is malformed"),
+        KconfqResult::KCONFQ_RESULT_NON_UTF8_PATH_TO_CONFIG => cstr!("path to config is not a valid UTF-8"),
+        KconfqResult::KCONFQ_RESULT_UNKNOWN_ERROR => cstr!("unknown internal error"),
+    }
 }
 
 /// Frees a string allocated by this library.
