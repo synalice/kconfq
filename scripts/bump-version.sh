@@ -19,11 +19,6 @@ EOF
 
 (( $# == 1 )) || usage
 
-if [ -n "$(git status --porcelain)" ]; then
-  echo "Error: Working tree or index is not clean" 1>&2
-  exit 1
-fi
-
 prek run --all-files
 
 TAG="v$1"
