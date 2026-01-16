@@ -107,7 +107,7 @@ pub extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const c_char 
 pub unsafe extern "C" fn kconfq_free_string(ptr: *const c_char) {
     if !ptr.is_null() {
         unsafe {
-            drop(CString::from_raw(ptr as *mut i8));
+            drop(CString::from_raw(ptr as *mut c_char));
         }
     }
 }
