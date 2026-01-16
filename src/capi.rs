@@ -7,7 +7,7 @@
 //! # Important
 //!
 //! This module is basically a C code written in Rust. All of this is extremely
-//! unsafe and should be written and modified very carefully.
+//! unsafe and should be audited very carefully.
 
 #![allow(clippy::missing_safety_doc)]
 #![allow(non_camel_case_types)]
@@ -116,7 +116,7 @@ pub unsafe extern "C" fn kconfq_free_string(ptr: *mut c_char) {
 ///
 /// - [`KconfqResult::KCONFQ_RESULT_SUCCESS`] - The configuration file was found
 ///   and `*out_path` is set to a newly allocated string.
-/// - [`KconfqResult::KCONFQ_RESULT_CONFIG_NOT_FOUND`] - No configuration file
+/// - [`KconfqResult::KCONFQ_RESULT_NOT_FOUND`] - No configuration file
 ///   was found. `*out_path` is set to `NULL`.
 /// - [`KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR`] - Failed to determine
 ///   the running kernel version. `*out_path` is set to `NULL`.
