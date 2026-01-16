@@ -6,8 +6,8 @@
 //!
 //! # Warning
 //!
-//! This module is basically a C code written in Rust. All of this is **extremely unsafe** and should be approached very
-//! carefully.
+//! This module is basically a C code written in Rust. All of this is **extremely unsafe** and
+//! should be approached very carefully.
 
 #![allow(clippy::missing_safety_doc)]
 #![allow(non_camel_case_types)]
@@ -74,12 +74,13 @@ pub enum KconfqResult {
 ///
 /// # Returns
 ///
-/// A pointer to a null-terminated, static string describing the status. Must NOT be freed or modified by the caller.
+/// A pointer to a null-terminated, static string describing the status. Must NOT be freed or
+/// modified by the caller.
 ///
 /// # Safety
 ///
-/// This function assumes `result` is a valid member of the [`KconfqResult`] enum. Passing any other arbitrary integer
-/// results in an undefined behavior.
+/// This function assumes `result` is a valid member of the [`KconfqResult`] enum. Passing any other
+/// arbitrary integer results in an undefined behavior.
 #[unsafe(no_mangle)]
 #[rustfmt::skip]
 pub unsafe extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const c_char {
@@ -127,8 +128,8 @@ pub unsafe extern "C" fn kconfq_free_config(ptr: *const crate::Config) {
 /// # Parameters
 ///
 /// - `config` - Pointer to `KconfqConfig` whose path we want to get.
-/// - `out_path` - Pointer to a location that on success will receive the allocated constant null-terminated string.
-///   Caller must free it using [`kconfq_free_string`]. Must NOT be NULL.
+/// - `out_path` - Pointer to a location that on success will receive the allocated constant
+///   null-terminated string. Caller must free it using [`kconfq_free_string`]. Must NOT be NULL.
 ///
 /// # Errors
 ///
@@ -157,15 +158,15 @@ pub unsafe extern "C" fn kconfq_config_path(
 ///
 /// # Parameters
 ///
-/// - `out_config` - Pointer to a location that on success will receive the allocated config. Caller must free it using
-///   [`kconfq_free_config`]. Must NOT be NULL.
+/// - `out_config` - Pointer to a location that on success will receive the allocated config. Caller
+///   must free it using [`kconfq_free_config`]. Must NOT be NULL.
 ///
 /// # Errors
 ///
-/// - [`KconfqResult::KCONFQ_RESULT_NOT_FOUND`] - No configuration file was found at any possible known location.
-///   `*out_path` was set to NULL.
-/// - [`KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR`] - Failed to determine the running kernel version. `*out_path`
-///   was set to NULL.
+/// - [`KconfqResult::KCONFQ_RESULT_NOT_FOUND`] - No configuration file was found at any possible
+///   known location. `*out_path` was set to NULL.
+/// - [`KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR`] - Failed to determine the running kernel
+///   version. `*out_path` was set to NULL.
 /// - [`KconfqResult::KCONFQ_RESULT_NULL_PARAMETER`] - One of the arguments was NULL.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_locate_config(
@@ -189,10 +190,10 @@ pub unsafe extern "C" fn kconfq_locate_config(
 ///
 /// # Parameters
 ///
-/// - `entry_name` - Pointer to a null-terminated C string specifying the name of the entry to search for. Must NOT be
-///   NULL.
-/// - `out_line` - Pointer to a location that on success will receive the allocated constant null-terminated string.
-///   Caller must free it using [`kconfq_free_string`]. Must NOT be NULL.
+/// - `entry_name` - Pointer to a null-terminated C string specifying the name of the entry to
+///   search for. Must NOT be NULL.
+/// - `out_line` - Pointer to a location that on success will receive the allocated constant
+///   null-terminated string. Caller must free it using [`kconfq_free_string`]. Must NOT be NULL.
 ///
 /// # Example `out_line` values
 ///
@@ -205,10 +206,13 @@ pub unsafe extern "C" fn kconfq_locate_config(
 /// # Errors
 ///
 /// - [`KconfqResult::KCONFQ_RESULT_MISSING_ENTRY`] - Entry is missing from the config.
-/// - [`KconfqResult::KCONFQ_RESULT_IO_ERROR`] - I/O error while trying to read the kernel config file.
+/// - [`KconfqResult::KCONFQ_RESULT_IO_ERROR`] - I/O error while trying to read the kernel config
+///   file.
 /// - [`KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT`] - `entry_name` is malformed.
-/// - [`KconfqResult::KCONFQ_RESULT_FAILED_TO_GET_READER`] - Failed to get reader to the config's file.
-/// - [`KconfqResult::KCONFQ_RESULT_NON_UTF8_STRING`] - Line with desired entry was not a valid UTF-8 string.
+/// - [`KconfqResult::KCONFQ_RESULT_FAILED_TO_GET_READER`] - Failed to get reader to the config's
+///   file.
+/// - [`KconfqResult::KCONFQ_RESULT_NON_UTF8_STRING`] - Line with desired entry was not a valid
+///   UTF-8 string.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_find_line(
     config: *const crate::Config,
@@ -257,10 +261,10 @@ pub unsafe extern "C" fn kconfq_find_line(
 ///
 /// # Parameters
 ///
-/// - `entry_name` - Pointer to a null-terminated C string specifying the name of the entry to search for. Must NOT be
-///   NULL.
-/// - `out_value` - Pointer to a location that on success will receive the allocated constant null-terminated string.
-///   Caller must free it using [`kconfq_free_string`]. Must NOT be NULL.
+/// - `entry_name` - Pointer to a null-terminated C string specifying the name of the entry to
+///   search for. Must NOT be NULL.
+/// - `out_value` - Pointer to a location that on success will receive the allocated constant
+///   null-terminated string. Caller must free it using [`kconfq_free_string`]. Must NOT be NULL.
 ///
 /// # Example `out_value` values
 ///
@@ -273,10 +277,13 @@ pub unsafe extern "C" fn kconfq_find_line(
 /// # Errors
 ///
 /// - [`KconfqResult::KCONFQ_RESULT_MISSING_ENTRY`] - Entry is missing from the config.
-/// - [`KconfqResult::KCONFQ_RESULT_IO_ERROR`] - I/O error while trying to read the kernel config file.
+/// - [`KconfqResult::KCONFQ_RESULT_IO_ERROR`] - I/O error while trying to read the kernel config
+///   file.
 /// - [`KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT`] - `entry_name` is malformed.
-/// - [`KconfqResult::KCONFQ_RESULT_FAILED_TO_GET_READER`] - Failed to get reader to the config's file.
-/// - [`KconfqResult::KCONFQ_RESULT_NON_UTF8_STRING`] - Line with desired entry was not a valid UTF-8 string.
+/// - [`KconfqResult::KCONFQ_RESULT_FAILED_TO_GET_READER`] - Failed to get reader to the config's
+///   file.
+/// - [`KconfqResult::KCONFQ_RESULT_NON_UTF8_STRING`] - Line with desired entry was not a valid
+///   UTF-8 string.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_find_value(
     config: *const crate::Config,
