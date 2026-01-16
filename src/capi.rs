@@ -65,6 +65,8 @@ pub enum KconfqResult {
     KCONFQ_RESULT_MISSING_ENTRY = 7,
     /// I/O error
     KCONFQ_RESULT_IO_ERROR = 8,
+    /// Failed to parse the value of the config's entry.
+    KCONFQ_RESULT_FAILED_TO_PARSE_ENTRY_VALUE = 9,
     /// Unknown internal error.
     KCONFQ_RESULT_UNKNOWN_ERROR = 255,
 }
@@ -95,6 +97,7 @@ pub unsafe extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const 
         KconfqResult::KCONFQ_RESULT_FAILED_TO_GET_READER => cstr!("failed to get reader to the config's file"),
         KconfqResult::KCONFQ_RESULT_MISSING_ENTRY => cstr!("entry is missing from the config"),
         KconfqResult::KCONFQ_RESULT_IO_ERROR => cstr!("I/O error"),
+        KconfqResult::KCONFQ_RESULT_FAILED_TO_PARSE_ENTRY_VALUE => cstr!("failed to parse the value of the config's entry"),
     }
 }
 
@@ -218,8 +221,8 @@ pub unsafe extern "C" fn kconfq_locate_config(
 ///   config.
 /// - [`KconfqResult::KCONFQ_RESULT_IO_ERROR`] - I/O error while trying to read
 ///   the kernel config file.
-/// - [`KconfqResult::KCONFQ_RESULT_NON_UTF8_STRING`] - Line was not a valid
-///   UTF-8 string.
+/// - [`KconfqResult::KCONFQ_RESULT_NON_UTF8_STRING`] - Line with desired entry
+///   was not a valid UTF-8 string.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_find_line(
     config: *const crate::Config,
@@ -259,6 +262,85 @@ pub unsafe extern "C" fn kconfq_find_line(
             }
             crate::error::FindLineError::FailedToReadConfigLine(_) => {
                 KconfqResult::KCONFQ_RESULT_IO_ERROR
+            }
+        },
+    }
+}
+
+/// Same as [`kconfq_find_line`], but return only the value of the entry.
+///
+/// # Parameters
+///
+/// - `entry_name` - Pointer to a null-terminated C string specifying the name
+///   of the entry to search for. Must NOT be NULL.
+/// - `out_value` - Pointer to a location that on success will receive the
+///   allocated constant null-terminated string. Caller must free it using
+///   [`kconfq_free_string`]. Must NOT be NULL.
+///
+/// # Example `out_value` values
+///
+/// - `y`
+/// - `m`
+/// - `12345`
+/// - `something something`
+/// - `# CONFIG_FOO is not set`
+///
+/// # Errors
+///
+/// - [`KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT`] - `entry_name` is
+///   malformed.
+/// - [`KconfqResult::KCONFQ_RESULT_FAILED_TO_GET_READER`] - Failed to get
+///   reader to the config's file.
+/// - [`KconfqResult::KCONFQ_RESULT_MISSING_ENTRY`] - Entry is missing from the
+///   config.
+/// - [`KconfqResult::KCONFQ_RESULT_IO_ERROR`] - I/O error while trying to read
+///   the kernel config file.
+/// - [`KconfqResult::KCONFQ_RESULT_NON_UTF8_STRING`] - Line with desired entry
+///   was not a valid UTF-8 string.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kconfq_find_value(
+    config: *const crate::Config,
+    entry_name: *const c_char,
+    out_value: *mut *const c_char,
+) -> KconfqResult {
+    assert_not_null!(config);
+    assert_not_null!(entry_name);
+    assert_not_null_and_set!(out_value);
+
+    let entry_name = unsafe { CStr::from_ptr(entry_name) };
+    let entry_name = match entry_name.to_str() {
+        Ok(str) => str,
+        Err(_) => return KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT,
+    };
+
+    let config = unsafe { &*config };
+    let config_reader = match config.reader() {
+        Ok(reader) => reader,
+        Err(_) => return KconfqResult::KCONFQ_RESULT_FAILED_TO_GET_READER,
+    };
+
+    match crate::find_value(entry_name, config_reader) {
+        Ok(line) => match CString::new(line.as_bytes()) {
+            Ok(c_string) => unsafe {
+                *out_value = c_string.into_raw();
+                KconfqResult::KCONFQ_RESULT_SUCCESS
+            },
+            Err(_) => KconfqResult::KCONFQ_RESULT_NON_UTF8_STRING,
+        },
+        Err(err) => match err {
+            crate::error::FindValueError::FailedToFindLine(err) => match err {
+                crate::error::FindLineError::EntryIsMissing(_) => {
+                    KconfqResult::KCONFQ_RESULT_MISSING_ENTRY
+                }
+                crate::error::FindLineError::MalformedEntryName(_) => {
+                    KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT
+                }
+                crate::error::FindLineError::FailedToReadConfigLine(_) => {
+                    KconfqResult::KCONFQ_RESULT_IO_ERROR
+                }
+            },
+            crate::error::FindValueError::FailedToParseLine(_) => {
+                KconfqResult::KCONFQ_RESULT_FAILED_TO_PARSE_ENTRY_VALUE
             }
         },
     }
