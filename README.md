@@ -3,8 +3,8 @@
 [![GitHub repo][github-repo-badge]][github-repo-url]
 [![crates.io][crates-badge]][crates-url]
 [![docs.rs][docs-badge]][docs-url]
-[![MIT licensed][mit-badge]][mit-url]
 [![build status][actions-badge]][actions-url]
+[![MIT licensed][mit-badge]][mit-url]
 
 [github-repo-badge]: https://img.shields.io/badge/github-repo-blue?logo=github
 [github-repo-url]: https://github.com/synalice/kconfq
