@@ -17,7 +17,6 @@ use std::os::raw::c_char;
 use std::ptr;
 
 /// Create compile-time null-terminated C string.
-#[macro_export]
 macro_rules! cstr {
     ($s:literal) => {{
         const BYTES: &[u8] = concat!($s, "\0").as_bytes();
