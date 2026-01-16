@@ -103,7 +103,8 @@ impl Config {
 ///
 /// May not find a config an return `Ok(None)`
 pub fn locate_config() -> Result<Option<Config>, LocateConfigError> {
-    let default_path = PathBuf::from(env!("DEFAULT_CONFIG_PATH"));
+    let default_path = option_env!("DEFAULT_CONFIG_PATH").unwrap_or_default();
+    let default_path = PathBuf::from(default_path);
 
     if default_path.exists() {
         return Ok(Some(Config { path: default_path }));
