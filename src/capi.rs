@@ -30,6 +30,7 @@ macro_rules! cstr {
 /// Usage: `<ENUM_MEMBER_NAME> = <integer_code> => "<description>" => "<Doc comment.>"`
 macro_rules! kconfq_results {
     ($($name:ident = $val:expr => $msg:literal => $doc:literal),+ $(,)?) => {
+        /// Result of the function's operation.
         #[repr(C)]
         #[derive(Copy, Clone, Debug, Eq, PartialEq)]
         pub enum KconfqResult {
