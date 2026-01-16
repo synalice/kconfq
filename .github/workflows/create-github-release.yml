@@ -1,0 +1,52 @@
+# SPDX-FileCopyrightText: © 2026 Nikita Krasnov <nikita.nikita.krasnov@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
+name: Create GitHub Release
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract tag name
+        id: tag
+        run: |
+          ref="${{ github.event.workflow_run.head_sha }}"
+          echo "sha=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve tag from SHA
+        id: resolve_tag
+        run: |
+          tag=$(git ls-remote --tags https://github.com/${{ github.repository }}.git \
+            | grep "${{ steps.tag.outputs.sha }}" \
+            | sed 's#.*/##' \
+            | head -n 1)
+
+          if [ -z "$tag" ]; then
+            echo "No tag found for this commit. Exiting."
+            exit 1
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.resolve_tag.outputs.tag }}
+          name: ${{ steps.resolve_tag.outputs.tag }}
+          body: |
+            Full Changelog: [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.resolve_tag.outputs.tag }}/CHANGELOG.md)

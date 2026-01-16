@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 name: Nix project setup
-description: Checkout repository, install Nix, and enter devShell
+description: Install Nix, and enter devShell
 
 runs:
   using: composite
