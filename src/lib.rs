@@ -13,6 +13,7 @@ use regex::Regex;
 use error::*;
 
 #[cfg(feature = "capi")]
+#[cfg_attr(docsrs, doc(cfg(feature = "capi")))]
 pub mod capi;
 pub mod error;
 
