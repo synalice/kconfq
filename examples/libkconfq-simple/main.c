@@ -4,31 +4,43 @@
 #include <kconfq/kconfq.h>
 
 int main(void) {
-  KconfqError *err;
-  char *kconf_path;
+  KconfqResult res;
   int exit_status = EXIT_SUCCESS;
 
-  kconfq_locate_config(&kconf_path, &err);
-
-  if (err != NULL) {
-    fprintf(stderr, "Error:\n");
-
-    int err_num = 1;
-
-    for (KconfqError *e = err; e != NULL; e = e->cause) {
-      fprintf(stderr, "%3d. %s\n", err_num, kconfq_error_message(e));
-      err_num += 1;
-    }
-
+  const KconfqConfig *config = NULL;
+  res = kconfq_locate_config(&config);
+  if (res != KCONFQ_RESULT_SUCCESS) {
+    fprintf(stderr, "Error: %s\n", kconfq_result_strerror(res));
     exit_status = EXIT_FAILURE;
-    goto cleanup;
+    goto cleanup1;
   }
 
-  printf("%s\n", kconf_path);
+  const char *config_path = NULL;
+  res = kconfq_config_path(config, &config_path);
+  if (res != KCONFQ_RESULT_SUCCESS) {
+    fprintf(stderr, "Error: %s\n", kconfq_result_strerror(res));
+    exit_status = EXIT_FAILURE;
+    goto cleanup2;
+  }
 
-cleanup:
-  kconfq_free_string(kconf_path);
-  kconfq_free_error(err);
+  printf("Path to config: %s\n", config_path);
+
+  const char *line = NULL;
+  res = kconfq_find_line(config, "CONFIG_CC_VERSION_TEXT", &line);
+  if (res != KCONFQ_RESULT_SUCCESS) {
+    fprintf(stderr, "Error: %s\n", kconfq_result_strerror(res));
+    exit_status = EXIT_FAILURE;
+    goto cleanup3;
+  }
+
+  printf("Line: %s\n", line);
+
+cleanup3:
+  kconfq_free_string(line);
+cleanup2:
+  kconfq_free_string(config_path);
+cleanup1:
+  kconfq_free_config(config);
 
   return exit_status;
 }
