@@ -204,10 +204,10 @@ pub unsafe extern "C" fn kconfq_locate_config(
 ///
 /// # Errors
 ///
-/// - [`KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT`] - `entry_name` is malformed.
-/// - [`KconfqResult::KCONFQ_RESULT_FAILED_TO_GET_READER`] - Failed to get reader to the config's file.
 /// - [`KconfqResult::KCONFQ_RESULT_MISSING_ENTRY`] - Entry is missing from the config.
 /// - [`KconfqResult::KCONFQ_RESULT_IO_ERROR`] - I/O error while trying to read the kernel config file.
+/// - [`KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT`] - `entry_name` is malformed.
+/// - [`KconfqResult::KCONFQ_RESULT_FAILED_TO_GET_READER`] - Failed to get reader to the config's file.
 /// - [`KconfqResult::KCONFQ_RESULT_NON_UTF8_STRING`] - Line with desired entry was not a valid UTF-8 string.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_find_line(
@@ -272,10 +272,10 @@ pub unsafe extern "C" fn kconfq_find_line(
 ///
 /// # Errors
 ///
-/// - [`KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT`] - `entry_name` is malformed.
-/// - [`KconfqResult::KCONFQ_RESULT_FAILED_TO_GET_READER`] - Failed to get reader to the config's file.
 /// - [`KconfqResult::KCONFQ_RESULT_MISSING_ENTRY`] - Entry is missing from the config.
 /// - [`KconfqResult::KCONFQ_RESULT_IO_ERROR`] - I/O error while trying to read the kernel config file.
+/// - [`KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT`] - `entry_name` is malformed.
+/// - [`KconfqResult::KCONFQ_RESULT_FAILED_TO_GET_READER`] - Failed to get reader to the config's file.
 /// - [`KconfqResult::KCONFQ_RESULT_NON_UTF8_STRING`] - Line with desired entry was not a valid UTF-8 string.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_find_value(
