@@ -3,11 +3,14 @@
 // SPDX-License-Identifier: MIT
 
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::{BufRead, BufReader, Read};
 use std::path::PathBuf;
+use std::sync::LazyLock;
+
+use flate2::read::GzDecoder;
+use regex::Regex;
 
 use error::*;
-use flate2::read::GzDecoder;
 
 #[cfg(feature = "capi")]
 pub mod capi;
@@ -19,53 +22,6 @@ pub struct Config {
 }
 
 /// An entry in the kernel config.
-///
-/// # Examples
-///
-/// `# CONFIG_EFI_PGT_DUMP is not set` will become
-/// ```rust
-/// # use kconfq::{ConfigEntry, ConfigValue};
-/// ConfigEntry::new(
-///     "CONFIG_EFI_PGT_DUMP",
-///     ConfigValue::No,
-/// );
-/// ```
-///
-/// `CONFIG_CC_IS_GCC=y` will become
-/// ```rust
-/// # use kconfq::{ConfigEntry, ConfigValue};
-/// ConfigEntry::new(
-///     "CONFIG_CC_IS_GCC",
-///     ConfigValue::Yes,
-/// );
-/// ```
-///
-/// `CONFIG_IKHEADERS=m` will become
-/// ```rust
-/// # use kconfq::{ConfigEntry, ConfigValue};
-/// ConfigEntry::new(
-///     "CONFIG_IKHEADERS",
-///     ConfigValue::Module,
-/// );
-/// ```
-///
-/// `CONFIG_CC_VERSION_TEXT="gcc (GCC) 14.3.0"` will become
-/// ```rust
-/// # use kconfq::{ConfigEntry, ConfigValue};
-/// ConfigEntry::new(
-///     "CONFIG_CC_VERSION_TEXT",
-///     ConfigValue::Value("gcc (GCC) 14.3.0".to_string()),
-/// );
-/// ```
-///
-/// `CONFIG_GCC_VERSION=140300` will become
-/// ```rust
-/// # use kconfq::{ConfigEntry, ConfigValue};
-/// ConfigEntry::new(
-///     "CONFIG_GCC_VERSION",
-///     ConfigValue::Value("140300".to_string()),
-/// );
-/// ```
 pub struct ConfigEntry {
     name: String,
     value: ConfigValue,
@@ -74,17 +30,18 @@ pub struct ConfigEntry {
 /// Possible value of the [`ConfigEntry`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ConfigValue {
-    /// Example: `CONFIG_CC_IS_GCC=y`
+    /// `CONFIG_FOO=y`
     Yes,
-    /// Example: `CONFIG_IKHEADERS=m`
+    /// `CONFIG_FOO=m`
     Module,
-    /// Example: `# CONFIG_EFI_PGT_DUMP is not set`
+    /// `# CONFIG_FOO is not set`
     No,
-    /// Example: `CONFIG_GCC_VERSION=140300`
+    /// `CONFIG_FOO=12345` or `CONFIG_FOO="something something"`
     Value(String),
 }
 
 impl ConfigEntry {
+    /// Create a new [`ConfigEntry`].
     pub fn new(name: impl Into<String>, value: ConfigValue) -> Self {
         Self {
             name: name.into(),
@@ -92,32 +49,36 @@ impl ConfigEntry {
         }
     }
 
+    /// Get the name of this [`ConfigEntry`].
     pub fn name(&self) -> &str {
         &self.name
     }
 
+    /// Get the value of this [`ConfigEntry`].
     pub fn value(&self) -> &ConfigValue {
         &self.value
     }
 }
 
 impl Config {
+    /// Create a new [`Config`].
     pub fn new<P: Into<PathBuf>>(path: P) -> Self {
         Self { path: path.into() }
     }
 
-    /// Return a reader to a kernel config file.
-    pub fn reader(&self) -> Result<Box<dyn Read>, GettingConfigReaderError> {
+    /// Get a reader to a an underlying file.
+    pub fn reader(&self) -> Result<Box<dyn BufRead>, GettingConfigReaderError> {
         let config_file =
             File::open(self.path()).map_err(GettingConfigReaderError::FailedToOpenFile)?;
 
         if self.is_gzip()? {
-            Ok(Box::new(GzDecoder::new(config_file)))
+            Ok(Box::new(BufReader::new(GzDecoder::new(config_file))))
         } else {
             Ok(Box::new(BufReader::new(config_file)))
         }
     }
 
+    /// Get a path to the underlying file.
     pub fn path(&self) -> &PathBuf {
         &self.path
     }
@@ -132,16 +93,16 @@ impl Config {
         let mut magic = [0u8; GZIP_MAGIC.len()];
         let n = reader
             .read(&mut magic)
-            .map_err(IsGzipError::FailedToReadMagic)?;
+            .map_err(IsGzipError::FailedToReadFileMagic)?;
 
         Ok(n == GZIP_MAGIC.len() && magic == GZIP_MAGIC)
     }
 }
 
-/// Search through all known config locations and return a path to it.
+/// Locate the kernel config file and return path to it.
 ///
 /// May not find a config an return `Ok(None)`
-pub fn locate_config() -> Result<Option<Config>, LocateConfigFileError> {
+pub fn locate_config() -> Result<Option<Config>, LocateConfigError> {
     let default_path = PathBuf::from(env!("DEFAULT_CONFIG_PATH"));
 
     if default_path.exists() {
@@ -164,21 +125,90 @@ pub fn locate_config() -> Result<Option<Config>, LocateConfigFileError> {
     Ok(None)
 }
 
-/// Same as [`locate_config`], but return and error if config was not
-/// found.
-pub fn require_config() -> Result<Config, RequireConfigFileError> {
-    locate_config()?.ok_or(RequireConfigFileError::NotFound)
+/// Same as [`locate_config`], but return an error if config was not found.
+pub fn require_config() -> Result<Config, RequireConfigError> {
+    locate_config()?.ok_or(RequireConfigError::NotFound)
+}
+
+/// Find line in the config that contains specified `entry_name`.
+///
+/// # Return value examples
+///
+/// - `CONFIG_FOO=y`
+/// - `CONFIG_FOO=m`
+/// - `CONFIG_FOO=12345`
+/// - `CONFIG_FOO="something something"`
+/// - `# CONFIG_FOO is not set`
+pub fn find_line(
+    entry_name: &str,
+    config_reader: impl BufRead,
+) -> Result<String, error::FindLineError> {
+    if is_config_entry_name_valid(entry_name) {
+        let name = entry_name.trim();
+
+        let regex_is_not_set = Regex::new(&format!(r"^# {} is not set", regex::escape(name)))?;
+        let regex_is_set = Regex::new(&format!(r"^{}=.*$", regex::escape(name)))?;
+
+        for line in config_reader.lines() {
+            let line = line?;
+            let line = line.trim();
+
+            if regex_is_not_set.find(line).is_some() || regex_is_set.find(line).is_some() {
+                return Ok(line.to_string());
+            }
+        }
+    }
+
+    Err(FindLineError::EntryIsMissing(entry_name.to_string()))
+}
+
+/// Same as [`find_line`], but return only the value of the entry.
+///
+/// # Return value examples
+///
+/// - `y`
+/// - `m`
+/// - `12345`
+/// - `something something`
+/// - `# CONFIG_FOO is not set`
+pub fn find_value(
+    entry_name: &str,
+    config_reader: impl BufRead,
+) -> Result<String, error::FindValueError> {
+    let line = find_line(entry_name, config_reader)?;
+
+    if line.starts_with("#") {
+        return Ok(line);
+    }
+
+    let split_line = line.split("=").collect::<Vec<&str>>();
+
+    if split_line.len() != 2 {
+        return Err(FindValueError::FailedToParseLine(line));
+    }
+
+    Ok(split_line
+        .get(1)
+        .expect("vec should have exactly 2 items")
+        .to_string())
+}
+
+/// Check that `name` is a valid config name (`CONFIG_FOO_BAR` instead of `abracadabra` or something else).
+fn is_config_entry_name_valid(name: &str) -> bool {
+    static VALID_CONFIG_ENTRY_NAME_REGEX: LazyLock<Regex> = std::sync::LazyLock::new(|| {
+        Regex::new(r"^CONFIG_[A-Z0-9_]+$").expect("hardcoded regex should be valid")
+    });
+
+    VALID_CONFIG_ENTRY_NAME_REGEX.is_match(name)
 }
 
 /// Get the version specified by `uname -r`.
-///
-/// This treats everything after the `major.minor.patch` triple as build metadata.
-fn get_linux_kernel_version() -> Result<String, GetLinuxKernelVersionError> {
-    let uname = nix::sys::utsname::uname().map_err(GetLinuxKernelVersionError::UnameError)?;
+fn get_linux_kernel_version() -> Result<String, GetKernelVersionError> {
+    let uname = nix::sys::utsname::uname().map_err(GetKernelVersionError::UnameError)?;
 
     Ok(uname
         .release()
         .to_str()
-        .ok_or(GetLinuxKernelVersionError::MissingUnameRelease)?
+        .ok_or(GetKernelVersionError::ReleaseMissingFromUname)?
         .to_owned())
 }

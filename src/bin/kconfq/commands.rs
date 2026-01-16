@@ -23,8 +23,30 @@ pub fn print_config(path: &Option<PathBuf>) -> Result<()> {
     let mut reader = config
         .reader()
         .context("failed to get reader of the kernel config file")?;
-    let mut stdout_writer = BufWriter::new(io::stdout().lock());
-    io::copy(&mut reader, &mut stdout_writer)?;
+    let mut stdout = BufWriter::new(io::stdout().lock());
+    io::copy(&mut reader, &mut stdout)?;
+
+    Ok(())
+}
+
+pub fn find_line(name: &str) -> Result<()> {
+    let config = require_config()?;
+    let config_reader = config.reader()?;
+
+    let line = kconfq::find_line(name, config_reader)?;
+
+    println!("{line}");
+
+    Ok(())
+}
+
+pub fn find_value(name: &str) -> Result<()> {
+    let config = require_config()?;
+    let config_reader = config.reader()?;
+
+    let value = kconfq::find_value(name, config_reader)?;
+
+    println!("{value}");
 
     Ok(())
 }

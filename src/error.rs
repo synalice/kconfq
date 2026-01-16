@@ -10,23 +10,23 @@ use nix::errno::Errno;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum GetLinuxKernelVersionError {
-    #[error("uname syscall returned with an errno {0}")]
+pub enum GetKernelVersionError {
+    #[error("uname syscall returned errno {0}")]
     UnameError(Errno),
     #[error("release level of the OS is missing from uname")]
-    MissingUnameRelease,
+    ReleaseMissingFromUname,
 }
 
 #[derive(Error, Debug)]
-pub enum LocateConfigFileError {
-    #[error("error getting linux kernel version")]
-    ErrorGettingLinuxKernelVersion(#[from] GetLinuxKernelVersionError),
+pub enum LocateConfigError {
+    #[error("failed to get linux kernel version")]
+    FailedToGetLinuxKernelVersion(#[from] GetKernelVersionError),
 }
 
 #[derive(Error, Debug)]
-pub enum RequireConfigFileError {
+pub enum RequireConfigError {
     #[error("failed to locate kernel config file")]
-    Locate(#[from] LocateConfigFileError),
+    FailedToLocate(#[from] LocateConfigError),
     #[error("kernel config file not found in any known location")]
     NotFound,
 }
@@ -36,7 +36,7 @@ pub enum IsGzipError {
     #[error("failed to open kernel config file: {0}")]
     FailedToOpenFile(io::Error),
     #[error("failed to read magic of the kernel config file: {0}")]
-    FailedToReadMagic(io::Error),
+    FailedToReadFileMagic(io::Error),
 }
 
 #[derive(Error, Debug)]
@@ -45,4 +45,24 @@ pub enum GettingConfigReaderError {
     FailedToOpenFile(io::Error),
     #[error("failed to check whenever the file is gzip-compressed or not")]
     GzipError(#[from] IsGzipError),
+}
+
+#[derive(Debug, Error)]
+#[allow(unused)]
+pub enum FindLineError {
+    #[error("entry \"{0}\" is missing from the config")]
+    EntryIsMissing(String),
+    #[error("entry name is malformed")]
+    MalformedEntryName(#[from] regex::Error),
+    #[error("failed to read kernel config file line")]
+    FailedToReadConfigLine(#[from] io::Error),
+}
+
+#[derive(Debug, Error)]
+#[allow(unused)]
+pub enum FindValueError {
+    #[error(transparent)]
+    FailedToFindLine(#[from] FindLineError),
+    #[error("failed to parse value from line {0}")]
+    FailedToParseLine(String),
 }

@@ -89,17 +89,13 @@ jobs:
         uses: ./.github/actions/nix-setup
 
       - name: Cross-compile $out
-        run: |
-          ./scripts/cross-compile.sh aarch64-multiplatform ./nix/libkconfq.nix out
-          tree result/
+        run: ./scripts/cross-compile.sh aarch64-multiplatform ./nix/libkconfq.nix out
 
       - name: Tree result/
         run: tree result/
 
       - name: Cross-compile $dev
-        run: |
-          ./scripts/cross-compile.sh aarch64-multiplatform ./nix/libkconfq.nix dev
-          tree result-dev/
+        run: ./scripts/cross-compile.sh aarch64-multiplatform ./nix/libkconfq.nix dev
 
       - name: Tree result-dev/
         run: tree result-dev/
@@ -115,6 +111,23 @@ jobs:
 
       - name: Run `cargo doc`
         run: RUSTDOCFLAGS="-Dwarnings" cargo doc
+
+  build-libkconfq-example:
+    name: "build libkconfq example"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ github.token }}
+
+      - name: Run `nix build`
+        run: nix build ./examples/libkconfq-simple/
+
+      - name: Run resulting binary
+        run: ./result/bin/example
 
   run-pre-commit-hooks:
     name: run pre-commit hooks

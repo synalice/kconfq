@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use std::path::PathBuf;
+use std::process::ExitCode;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -26,17 +27,23 @@ enum Commands {
         /// Read kernel config from this path
         path: Option<PathBuf>,
     },
+    /// Find config's line by its entry name
+    Find { entry_name: String },
+    /// Find value of the config's entry
+    FindValue { entry_name: String },
 }
 
-fn main() -> Result<()> {
+fn main() -> Result<ExitCode> {
     let cli = Cli::parse();
 
     if let Some(command) = &cli.command {
         match command {
             Commands::Path => commands::print_config_path()?,
             Commands::Config { path } => commands::print_config(path)?,
+            Commands::Find { entry_name } => commands::find_line(entry_name)?,
+            Commands::FindValue { entry_name } => commands::find_value(entry_name)?,
         }
     }
 
-    Ok(())
+    Ok(ExitCode::SUCCESS)
 }
