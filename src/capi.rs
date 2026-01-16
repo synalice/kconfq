@@ -25,58 +25,59 @@ macro_rules! cstr {
     }};
 }
 
-/// Status of the [`kconfq_locate_config`] function.
-#[repr(C)]
-pub enum KconfqResult {
-    /// Success.
-    KCONFQ_RESULT_SUCCESS = 0,
-    /// Not found.
-    KCONFQ_RESULT_NOT_FOUND = 1,
-    /// Error getting linux kernel version.
-    KCONFQ_RESULT_KERNEL_VERSION_ERROR = 2,
-    /// NULL pointer passed as parameter.
-    KCONFQ_RESULT_NULL_PARAMETER = 3,
-    /// Input to a fucntion is malformed.
-    KCONFQ_RESULT_MALFORMED_INPUT = 4,
-    /// Unknown internal error.
-    KCONFQ_RESULT_UNKNOWN_ERROR = 255,
+/// Generate enum + FFI-safe strerror function + doc comments
+///
+/// Usage: `<ENUM_MEMBER_NAME> = <integer_code> => "<description>" => "<Doc comment.>"`
+macro_rules! kconfq_results {
+    ($($name:ident = $val:expr => $msg:literal => $doc:literal),+ $(,)?) => {
+        #[repr(C)]
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum KconfqResult {
+            $(
+                #[doc = $doc]
+                $name = $val,
+            )+
+        }
+
+        /// Returns a human-readable string, describing a [`KconfqResult`].
+        ///
+        /// # Parameters
+        ///
+        /// * `result` - A valid [`KconfqResult`] value returned by
+        ///   [`kconfq_locate_config`].
+        ///
+        /// # Returns
+        ///
+        /// A pointer to a null-terminated, static string describing the status.
+        ///
+        /// The returned pointer:
+        ///
+        /// - Has static lifetime
+        /// - Must NOT be freed or modified by the caller
+        /// - Is valid for the duration of the program
+        ///
+        /// # Safety
+        ///
+        /// This function assumes `result` is a valid member of the
+        /// [`KconfqResult`] enum. Passing any other arbitrary integer results in
+        /// an undefined behavior.
+        #[unsafe(no_mangle)]
+        pub extern "C" fn kconfq_result_strerror(result: KconfqResult)
+            -> *const std::os::raw::c_char {
+            match result {
+                $(KconfqResult::$name => cstr!($msg),)+
+            }
+        }
+    };
 }
 
-/// Returns a human-readable string, describing a [`KconfqResult`].
-///
-/// # Parameters
-///
-/// * `result` - A valid [`KconfqResult`] value returned by
-///   [`kconfq_locate_config`].
-///
-/// # Returns
-///
-/// A pointer to a null-terminated, static string describing the status.
-///
-/// The returned pointer:
-///
-/// - Has static lifetime
-/// - Must NOT be freed or modified by the caller
-/// - Is valid for the duration of the program
-///
-/// # Safety
-///
-/// This function assumes `result` is a valid member of the
-/// [`KconfqResult`] enum. Passing any other arbitrary integer results in
-/// an undefined behavior.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn kconfq_result_strerror(result: KconfqResult) -> *const c_char {
-    // SAFETY: all strings are static and null-terminated
-    match result {
-        KconfqResult::KCONFQ_RESULT_SUCCESS => cstr!("success"),
-        KconfqResult::KCONFQ_RESULT_NOT_FOUND => cstr!("not found"),
-        KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR => {
-            cstr!("error getting Linux kernel version")
-        }
-        KconfqResult::KCONFQ_RESULT_NULL_PARAMETER => cstr!("parameter is a NULL pointer"),
-        KconfqResult::KCONFQ_RESULT_UNKNOWN_ERROR => cstr!("unknown internal error"),
-        KconfqResult::KCONFQ_RESULT_MALFORMED_INPUT => cstr!("input to a fucntion is malformed"),
-    }
+kconfq_results! {
+    KCONFQ_RESULT_SUCCESS = 0 => "success" => "Success.",
+    KCONFQ_RESULT_NOT_FOUND = 1 => "not found" => "Not Found.",
+    KCONFQ_RESULT_KERNEL_VERSION_ERROR = 2 => "error getting Linux kernel version" => "Error Getting Linux Kernel Version.",
+    KCONFQ_RESULT_NULL_PARAMETER = 3 => "parameter is a NULL pointer" => "Parameter Is A NULL Pointer.",
+    KCONFQ_RESULT_MALFORMED_INPUT = 4 => "input to a function is malformed" => "Input To A Function Is Malformed.",
+    KCONFQ_RESULT_UNKNOWN_ERROR = 255 => "unknown internal error" => "Unknown Internal Error.",
 }
 
 /// Frees a string allocated by this library.
