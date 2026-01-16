@@ -93,10 +93,9 @@ pub unsafe extern "C" fn kconfq_free_string(ptr: *const c_char) {
 ///   constant null-terminated string on success. Caller must free it using
 ///   [`kconfq_free_string`]. Must NOT be NULL.
 ///
-/// # Return values
+/// # Errors
+/// # Errors
 ///
-/// - [`KconfqResult::KCONFQ_RESULT_SUCCESS`] - Configuration file was found and
-///   `*out_path` was set to a newly allocated string.
 /// - [`KconfqResult::KCONFQ_RESULT_NOT_FOUND`] - No configuration file was
 ///   found at any possible known location. `*out_path` was set to NULL.
 /// - [`KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR`] - Failed to determine
@@ -134,8 +133,8 @@ pub unsafe extern "C" fn kconfq_locate_config(out_path: *mut *const c_char) -> K
 ///
 /// - `entry_name` - Pointer to a null-terminated C string specifying the name
 ///   of the entry to search for. The pointer must not be NULL.
-/// - `out_line` - Pointer to a location that will receive the allocated
-///   constant null-terminated string on success. Caller must free it using
+/// - `out_line` - Pointer to a location that on success will receive the
+///   allocated constant null-terminated string. Caller must free it using
 ///   [`kconfq_free_string`]. Must NOT be NULL.
 ///
 /// # Return value examples

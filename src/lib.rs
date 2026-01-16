@@ -78,7 +78,7 @@ impl Config {
         }
     }
 
-    /// Get a path of the underlying file.
+    /// Get a path to the underlying file.
     pub fn path(&self) -> &PathBuf {
         &self.path
     }
