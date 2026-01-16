@@ -21,7 +21,7 @@ pub enum GetKernelVersionError {
 #[derive(Error, Debug)]
 pub enum LocateConfigFileError {
     #[error("error getting linux kernel version")]
-    ErrorGettingLinuxKernelVersion(#[from] GetKernelVersionError),
+    GettingLinuxKernelVersion(#[from] GetKernelVersionError),
 }
 
 #[derive(Error, Debug)]
@@ -37,7 +37,7 @@ pub enum IsGzipError {
     #[error("failed to open kernel config file: {0}")]
     FailedToOpenFile(io::Error),
     #[error("failed to read magic of the kernel config file: {0}")]
-    FailedToReadMagic(io::Error),
+    FailedToReadFileMagic(io::Error),
 }
 
 #[derive(Error, Debug)]

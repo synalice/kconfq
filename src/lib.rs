@@ -138,7 +138,7 @@ impl Config {
         let mut magic = [0u8; GZIP_MAGIC.len()];
         let n = reader
             .read(&mut magic)
-            .map_err(IsGzipError::FailedToReadMagic)?;
+            .map_err(IsGzipError::FailedToReadFileMagic)?;
 
         Ok(n == GZIP_MAGIC.len() && magic == GZIP_MAGIC)
     }
