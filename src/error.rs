@@ -25,23 +25,23 @@ pub enum LocateConfigError {
 
 #[derive(Error, Debug)]
 pub enum RequireConfigError {
-    #[error("failed to locate kernel config file")]
+    #[error("failed to locate config file")]
     FailedToLocate(#[from] LocateConfigError),
-    #[error("kernel config file not found in any known location")]
+    #[error("config file not found")]
     NotFound,
 }
 
 #[derive(Error, Debug)]
 pub enum IsGzipError {
-    #[error("failed to open kernel config file: {0}")]
+    #[error("failed to open config file")]
     FailedToOpenFile(io::Error),
-    #[error("failed to read magic of the kernel config file: {0}")]
+    #[error("failed to read magic of the config file")]
     FailedToReadFileMagic(io::Error),
 }
 
 #[derive(Error, Debug)]
 pub enum GettingConfigReaderError {
-    #[error("failed to open kernel config file: {0}")]
+    #[error("failed to open config file")]
     FailedToOpenFile(io::Error),
     #[error("failed to check whenever the file is gzip-compressed or not")]
     GzipError(#[from] IsGzipError),
@@ -63,6 +63,6 @@ pub enum FindLineError {
 pub enum FindValueError {
     #[error(transparent)]
     FailedToFindLine(#[from] FindLineError),
-    #[error("failed to parse value from line {0}")]
+    #[error("failed to parse value from line: \"{0}\"")]
     FailedToParseLine(String),
 }
