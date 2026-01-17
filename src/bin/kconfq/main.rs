@@ -28,9 +28,15 @@ enum Commands {
         path: Option<PathBuf>,
     },
     /// Find config's line by its entry name
-    Find { entry_name: String },
+    Find {
+        /// Example: CONFIG_CC_VERSION_TEXT
+        entry_name: String,
+    },
     /// Find value of the config's entry
-    FindValue { entry_name: String },
+    FindValue {
+        /// Example: CONFIG_CC_VERSION_TEXT
+        entry_name: String,
+    },
     /// Print whenever the config's file is gzip-compressed or not
     IsGzip,
 }
