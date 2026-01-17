@@ -13,6 +13,7 @@
 #![allow(non_camel_case_types)]
 
 use std::ffi::{CStr, CString, c_char};
+use std::ptr;
 
 /// Create compile-time null-terminated C string.
 macro_rules! cstr {
@@ -35,11 +36,12 @@ macro_rules! assert_not_null {
 
 /// Run [`assert_not_null`] on pointer, then dereference it and set to NULL.
 macro_rules! assert_not_null_and_set {
-    ($ptr:expr) => {{
+    ($ptr:expr, $val:expr) => {{
         let ptr = $ptr;
+        let val = $val;
         assert_not_null!(ptr);
         unsafe {
-            *ptr = std::ptr::null_mut();
+            *ptr = val;
         }
     }};
 }
@@ -143,7 +145,7 @@ pub unsafe extern "C" fn kconfq_config_path(
     out_path: *mut *const c_char,
 ) -> KconfqResult {
     assert_not_null!(config);
-    assert_not_null_and_set!(out_path);
+    assert_not_null_and_set!(out_path, ptr::null_mut());
 
     let config = unsafe { &*config };
 
@@ -174,7 +176,7 @@ pub unsafe extern "C" fn kconfq_config_path(
 pub unsafe extern "C" fn kconfq_locate_config(
     out_config: *mut *const crate::Config,
 ) -> KconfqResult {
-    assert_not_null_and_set!(out_config);
+    assert_not_null_and_set!(out_config, ptr::null_mut());
 
     match crate::locate_config() {
         Ok(Some(config)) => unsafe {
@@ -223,7 +225,7 @@ pub unsafe extern "C" fn kconfq_find_line(
 ) -> KconfqResult {
     assert_not_null!(config);
     assert_not_null!(entry_name);
-    assert_not_null_and_set!(out_line);
+    assert_not_null_and_set!(out_line, ptr::null_mut());
 
     let entry_name = unsafe { CStr::from_ptr(entry_name) };
     let entry_name = match entry_name.to_str() {
@@ -294,7 +296,7 @@ pub unsafe extern "C" fn kconfq_find_value(
 ) -> KconfqResult {
     assert_not_null!(config);
     assert_not_null!(entry_name);
-    assert_not_null_and_set!(out_value);
+    assert_not_null_and_set!(out_value, ptr::null_mut());
 
     let entry_name = unsafe { CStr::from_ptr(entry_name) };
     let entry_name = match entry_name.to_str() {
