@@ -50,4 +50,4 @@ jobs:
           tag_name: ${{ steps.resolve_tag.outputs.tag }}
           name: ${{ steps.resolve_tag.outputs.tag }}
           body: |
-            Full Changelog: [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.resolve_tag.outputs.tag }}/CHANGELOG.md)
+            **Full Changelog:** [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.resolve_tag.outputs.tag }}/CHANGELOG.md)
