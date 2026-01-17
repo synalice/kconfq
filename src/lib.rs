@@ -24,44 +24,44 @@ pub struct Config {
     path: PathBuf,
 }
 
-/// An entry in the kernel config.
-pub struct ConfigEntry {
-    name: String,
-    value: ConfigValue,
-}
+// /// An entry in the kernel config.
+// pub struct ConfigEntry {
+//     name: String,
+//     value: ConfigValue,
+// }
 
-/// Possible value of the [`ConfigEntry`].
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ConfigValue {
-    /// `CONFIG_FOO=y`
-    Yes,
-    /// `CONFIG_FOO=m`
-    Module,
-    /// `# CONFIG_FOO is not set`
-    No,
-    /// `CONFIG_FOO=12345` or `CONFIG_FOO="something something"`
-    Value(String),
-}
+// /// Possible value of the [`ConfigEntry`].
+// #[derive(Debug, Clone, PartialEq, Eq)]
+// pub enum ConfigValue {
+//     /// `CONFIG_FOO=y`
+//     Yes,
+//     /// `CONFIG_FOO=m`
+//     Module,
+//     /// `# CONFIG_FOO is not set`
+//     No,
+//     /// `CONFIG_FOO=12345` or `CONFIG_FOO="something something"`
+//     Value(String),
+// }
 
-impl ConfigEntry {
-    /// Create a new [`ConfigEntry`].
-    pub fn new(name: impl Into<String>, value: ConfigValue) -> Self {
-        Self {
-            name: name.into(),
-            value,
-        }
-    }
+// impl ConfigEntry {
+//     /// Create a new [`ConfigEntry`].
+//     pub fn new(name: impl Into<String>, value: ConfigValue) -> Self {
+//         Self {
+//             name: name.into(),
+//             value,
+//         }
+//     }
 
-    /// Get the name of this [`ConfigEntry`].
-    pub fn name(&self) -> &str {
-        &self.name
-    }
+//     /// Get the name of this [`ConfigEntry`].
+//     pub fn name(&self) -> &str {
+//         &self.name
+//     }
 
-    /// Get the value of this [`ConfigEntry`].
-    pub fn value(&self) -> &ConfigValue {
-        &self.value
-    }
-}
+//     /// Get the value of this [`ConfigEntry`].
+//     pub fn value(&self) -> &ConfigValue {
+//         &self.value
+//     }
+// }
 
 impl Config {
     /// Create a new [`Config`].
