@@ -133,7 +133,7 @@ pub unsafe extern "C" fn kconfq_free_config(ptr: *const crate::Config) {
 ///
 /// - `config` - Pointer to `KconfqConfig` whose path we want to get.
 /// - `out_path` - Pointer to a location that on success will receive the allocated constant
-///   null-terminated string. Caller must free it using [`kconfq_free_string`]. Must NOT be NULL.
+///   null-terminated string. Caller must free it using [`kconfq_free_string`]. MUST NOT be NULL.
 ///
 /// # Errors
 ///
@@ -164,7 +164,7 @@ pub unsafe extern "C" fn kconfq_config_path(
 ///
 /// - `config` - Pointer to `KconfqConfig` whose path we want to get.
 /// - `out_bool` - Pointer to a boolean that on success will receive the allocated constant
-///   null-terminated string. Caller must free it using [`kconfq_free_string`]. Must NOT be NULL.
+///   null-terminated string. Caller must free it using [`kconfq_free_string`]. MUST NOT be NULL.
 ///
 /// # Errors
 ///
@@ -193,7 +193,7 @@ pub unsafe extern "C" fn kconfq_config_is_gzip(
 /// # Parameters
 ///
 /// - `out_config` - Pointer to a location that on success will receive the allocated config. Caller
-///   must free it using [`kconfq_free_config`]. Must NOT be NULL.
+///   must free it using [`kconfq_free_config`]. MUST NOT be NULL.
 ///
 /// # Errors
 ///
@@ -225,9 +225,9 @@ pub unsafe extern "C" fn kconfq_locate_config(
 /// # Parameters
 ///
 /// - `entry_name` - Pointer to a null-terminated C string specifying the name of the entry to
-///   search for. Must NOT be NULL.
+///   search for. MUST NOT be NULL.
 /// - `out_line` - Pointer to a location that on success will receive the allocated constant
-///   null-terminated string. Caller must free it using [`kconfq_free_string`]. Must NOT be NULL.
+///   null-terminated string. Caller must free it using [`kconfq_free_string`]. MUST NOT be NULL.
 ///
 /// # Example `out_line` values
 ///
@@ -296,9 +296,9 @@ pub unsafe extern "C" fn kconfq_find_line(
 /// # Parameters
 ///
 /// - `entry_name` - Pointer to a null-terminated C string specifying the name of the entry to
-///   search for. Must NOT be NULL.
+///   search for. MUST NOT be NULL.
 /// - `out_value` - Pointer to a location that on success will receive the allocated constant
-///   null-terminated string. Caller must free it using [`kconfq_free_string`]. Must NOT be NULL.
+///   null-terminated string. Caller must free it using [`kconfq_free_string`]. MUST NOT be NULL.
 ///
 /// # Example `out_value` values
 ///
