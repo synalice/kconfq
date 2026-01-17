@@ -145,6 +145,10 @@ using Nix
 > `aarch64-multiplatform` with `riscv64` or something else. [Read more
 > here](https://nix.dev/tutorials/cross-compilation.html#choosing-the-host-platform-with-nix).
 
+## TODO
+
+- [ ] Add tests.
+
 ## License
 
 This project is under the [MIT](https://opensource.org/license/mit) license.
