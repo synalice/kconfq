@@ -4,11 +4,13 @@
 #include <kconfq/kconfq.h>
 
 int main(void) {
+  const int printf_width = 20;
+
   KconfqResult res;
   int exit_status = EXIT_SUCCESS;
 
   const KconfqConfig *config = NULL;
-  res = kconfq_locate_config(&config);
+  res = kconfq_locate_config(NULL, &config);
   if (res != KCONFQ_RESULT_SUCCESS) {
     fprintf(stderr, "Error: %s\n", kconfq_result_strerror(res));
     exit_status = EXIT_FAILURE;
@@ -23,7 +25,7 @@ int main(void) {
     goto cleanup2;
   }
 
-  printf("Path to config: %s\n", config_path);
+  printf("%*s %s\n", printf_width, "Path to config:", config_path);
 
   const char *line = NULL;
   res = kconfq_find_line(config, "CONFIG_CC_VERSION_TEXT", &line);
@@ -33,7 +35,7 @@ int main(void) {
     goto cleanup3;
   }
 
-  printf("Line: %s\n", line);
+  printf("%*s %s\n", printf_width, "Line:", line);
 
   const char *entry_value = NULL;
   res = kconfq_find_value(config, "CONFIG_CC_VERSION_TEXT", &entry_value);
@@ -43,7 +45,7 @@ int main(void) {
     goto cleanup4;
   }
 
-  printf("Entry value: %s\n", entry_value);
+  printf("%*s %s\n", printf_width, "Entry value:", entry_value);
 
   bool is_gzip = false;
   res = kconfq_config_is_gzip(config, &is_gzip);
@@ -53,7 +55,8 @@ int main(void) {
     goto cleanup4;
   }
 
-  printf("Is Gzip-compressed: %s\n", is_gzip ? "true" : "false");
+  printf("%*s %s\n", printf_width,
+         "Is Gzip-compressed:", is_gzip ? "true" : "false");
 
 cleanup4:
   kconfq_free_string(entry_value);

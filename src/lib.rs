@@ -6,7 +6,7 @@
 
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 
 use flate2::read::GzDecoder;
@@ -105,12 +105,17 @@ impl Config {
 /// Locate the kernel config file and return path to it.
 ///
 /// May not find a config an return `Ok(None)`
-pub fn locate_config() -> Result<Option<Config>, LocateConfigError> {
-    let default_path = option_env!("DEFAULT_CONFIG_PATH").unwrap_or_default();
-    let default_path = PathBuf::from(default_path);
-
-    if default_path.exists() {
-        return Ok(Some(Config { path: default_path }));
+pub fn locate_config<P: AsRef<Path>>(
+    default_path: Option<P>,
+) -> Result<Option<Config>, LocateConfigError> {
+    if let Some(path) = default_path {
+        if path.as_ref().exists() {
+            return Ok(Some(Config {
+                path: path.as_ref().to_path_buf(),
+            }));
+        } else {
+            return Ok(None);
+        }
     }
 
     let proc_path = PathBuf::from("/proc/config.gz");
@@ -130,8 +135,10 @@ pub fn locate_config() -> Result<Option<Config>, LocateConfigError> {
 }
 
 /// Same as [`locate_config`], but return an error if config was not found.
-pub fn require_config() -> Result<Config, RequireConfigError> {
-    locate_config()?.ok_or(RequireConfigError::NotFound)
+pub fn require_config<P: AsRef<Path>>(
+    default_path: Option<P>,
+) -> Result<Config, RequireConfigError> {
+    locate_config(default_path)?.ok_or(RequireConfigError::NotFound)
 }
 
 /// Find line in the config that contains specified `entry_name`.

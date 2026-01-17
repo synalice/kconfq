@@ -13,6 +13,7 @@
 #![allow(non_camel_case_types)]
 
 use std::ffi::{CStr, CString, c_char};
+use std::path::PathBuf;
 use std::ptr;
 
 /// Create compile-time null-terminated C string.
@@ -192,23 +193,38 @@ pub unsafe extern "C" fn kconfq_config_is_gzip(
 ///
 /// # Parameters
 ///
+/// - `default_path` - NUL terminated string. Use it to locate the config at this path. Set to NULL
+///   if you want to locate the file dynamically instead.
 /// - `out_config` - Pointer to a location that on success will receive the allocated config. Caller
 ///   must free it using [`kconfq_free_config`]. MUST NOT be NULL.
 ///
 /// # Errors
 ///
-/// - [`KconfqResult::KCONFQ_RESULT_NOT_FOUND`] - No configuration file was found at any possible
-///   known location. `*out_path` was set to NULL.
+/// - [`KconfqResult::KCONFQ_RESULT_NOT_FOUND`] - No configuration file was found. `*out_path` was
+///   set to NULL.
 /// - [`KconfqResult::KCONFQ_RESULT_KERNEL_VERSION_ERROR`] - Failed to determine the running kernel
 ///   version. `*out_path` was set to NULL.
 /// - [`KconfqResult::KCONFQ_RESULT_NULL_PARAMETER`] - One of the arguments was NULL.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kconfq_locate_config(
+    default_path: *const c_char,
     out_config: *mut *const crate::Config,
 ) -> KconfqResult {
     assert_not_null_and_set!(out_config, ptr::null_mut());
 
-    match crate::locate_config() {
+    let path = if default_path.is_null() {
+        None
+    } else {
+        let default_path = unsafe { CStr::from_ptr(default_path) };
+        let default_path = match default_path.to_str() {
+            Ok(str) => str,
+            Err(_) => return KconfqResult::KCONFQ_RESULT_MALFORMED_ARGUMENT,
+        };
+        let default_path = PathBuf::from(default_path);
+        Some(default_path)
+    };
+
+    match crate::locate_config(path) {
         Ok(Some(config)) => unsafe {
             *out_config = Box::into_raw(Box::new(config));
             KconfqResult::KCONFQ_RESULT_SUCCESS
