@@ -71,12 +71,12 @@ kconfq = dependency('kconfq')
 ### Example
 
 You can see the example of how to use the C-API in the
-[examples/libkconfq-simple/](examples/libkconfq-simple/) directory.
+[examples/libkconfq/](examples/libkconfq/) directory.
 
 To build and run the example, run the following commands:
 
 ```bash
-cd examples/libkconfq-simple/
+cd examples/libkconfq/
 nix develop
 meson setup builddir/
 meson compile -C builddir/

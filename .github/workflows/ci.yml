@@ -125,7 +125,7 @@ jobs:
           github_access_token: ${{ github.token }}
 
       - name: Run `nix build`
-        run: nix build ./examples/libkconfq-simple/
+        run: nix build ./examples/libkconfq/
 
       - name: Run resulting binary
         run: ./result/bin/example
