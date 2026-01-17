@@ -12,8 +12,11 @@ Versioning].
 
 ### kconfq (CLI)
 
+#### Added
+
 - Sub-command `is-gzip` to print whenever the config's file is gzip-compressed
   or not.
+- Global arg `--path` to specify location of the config file.
 
 ### kconfq (library)
 
@@ -22,10 +25,22 @@ Versioning].
 - Unused `ConfigEntry` struct.
 - Unused `ConfigValue` enum.
 
+#### Changed
+
+- Functions `locate_config` and `require_config` now require an optional
+  `default_path` argument.
+- Update error strings.
+
 ### libkconfq (C-API)
+
+#### Added
 
 - Function `kconfq_config_is_gzip` to check whenever the config's file is
   gzip-compressed or not.
+
+#### Changed
+
+- Function `kconfq_locate_config` now takes an optional argument `default_path`.
 
 ## [0.1.3] - 2026-01-17
 
