@@ -50,3 +50,15 @@ pub fn find_value(name: &str) -> Result<()> {
 
     Ok(())
 }
+
+pub fn is_gzip() -> Result<()> {
+    let config = require_config()?;
+
+    if config.is_gzip()? {
+        println!("true");
+    } else {
+        println!("false");
+    }
+
+    Ok(())
+}

@@ -10,12 +10,22 @@ Versioning].
 
 ## _Upcoming_
 
+### kconfq (CLI)
+
+- Sub-command `is-gzip` to print whenever the config's file is gzip-compressed
+  or not.
+
 ### kconfq (library)
 
 #### Removed
 
 - Unused `ConfigEntry` struct.
 - Unused `ConfigValue` enum.
+
+### libkconfq (C-API)
+
+- Function `kconfq_config_is_gzip` to check whenever the config's file is
+  gzip-compressed or not.
 
 ## [0.1.3] - 2026-01-17
 

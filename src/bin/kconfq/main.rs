@@ -31,6 +31,8 @@ enum Commands {
     Find { entry_name: String },
     /// Find value of the config's entry
     FindValue { entry_name: String },
+    /// Print whenever the config's file is gzip-compressed or not
+    IsGzip,
 }
 
 fn main() -> Result<ExitCode> {
@@ -42,6 +44,7 @@ fn main() -> Result<ExitCode> {
             Commands::Config { path } => commands::print_config(path)?,
             Commands::Find { entry_name } => commands::find_line(entry_name)?,
             Commands::FindValue { entry_name } => commands::find_value(entry_name)?,
+            Commands::IsGzip => commands::is_gzip()?,
         }
     }
 

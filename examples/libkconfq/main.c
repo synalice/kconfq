@@ -45,6 +45,16 @@ int main(void) {
 
   printf("Entry value: %s\n", entry_value);
 
+  bool is_gzip = false;
+  res = kconfq_config_is_gzip(config, &is_gzip);
+  if (res != KCONFQ_RESULT_SUCCESS) {
+    fprintf(stderr, "Error: %s\n", kconfq_result_strerror(res));
+    exit_status = EXIT_FAILURE;
+    goto cleanup4;
+  }
+
+  printf("Is Gzip-compressed: %s\n", is_gzip ? "true" : "false");
+
 cleanup4:
   kconfq_free_string(entry_value);
 cleanup3:

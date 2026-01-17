@@ -158,6 +158,36 @@ pub unsafe extern "C" fn kconfq_config_path(
     }
 }
 
+/// Check whenever the config's file is gzip-compressed or not.
+///
+/// # Parameters
+///
+/// - `config` - Pointer to `KconfqConfig` whose path we want to get.
+/// - `out_bool` - Pointer to a boolean that on success will receive the allocated constant
+///   null-terminated string. Caller must free it using [`kconfq_free_string`]. Must NOT be NULL.
+///
+/// # Errors
+///
+/// - [`KconfqResult::KCONFQ_RESULT_NULL_PARAMETER`] - One of the arguments was NULL.
+/// - [`KconfqResult::KCONFQ_RESULT_IO_ERROR`] - I/O error while reading the file.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kconfq_config_is_gzip(
+    config: *const crate::Config,
+    out_bool: *mut bool,
+) -> KconfqResult {
+    assert_not_null!(config);
+    assert_not_null_and_set!(out_bool, false);
+
+    let config = unsafe { &*config };
+    match config.is_gzip() {
+        Ok(b) => unsafe {
+            *out_bool = b;
+            KconfqResult::KCONFQ_RESULT_SUCCESS
+        },
+        Err(_) => KconfqResult::KCONFQ_RESULT_IO_ERROR,
+    }
+}
+
 /// Locate the kernel config file and return path to it.
 ///
 /// # Parameters

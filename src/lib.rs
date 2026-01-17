@@ -86,7 +86,7 @@ impl Config {
         &self.path
     }
 
-    /// Detect whenever the config file is gzip-compressed or not.
+    /// Check whenever the config's file is gzip-compressed or not.
     pub fn is_gzip(&self) -> Result<bool, IsGzipError> {
         let file = File::open(self.path()).map_err(IsGzipError::FailedToOpenFile)?;
         let mut reader = BufReader::new(file);
