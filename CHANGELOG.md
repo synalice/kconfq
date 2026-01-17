@@ -8,7 +8,14 @@ Versioning].
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## _Upcoming_
+
+### kconfq (library)
+
+#### Removed
+
+- Unused `ConfigEntry` struct.
+- Unused `ConfigValue` enum.
 
 ## [0.1.3] - 2026-01-17
 
@@ -77,6 +84,5 @@ Versioning].
 
 - Function `kconfq_locate_config` to find the location of the kernel config.
 
-[Unreleased]: https://github.com/synalice/kconfq/compare/v0.1.2...HEAD
-[0.1.3]: https://github.com/synalice/kconfq/compare/v0.1.2...v0.1.3
+[0.1.3]: https://github.com/synalice/kconfq/releases/tag/v0.1.3
 [0.1.2]: https://github.com/synalice/kconfq/releases/tag/v0.1.2
