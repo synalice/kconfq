@@ -26,7 +26,8 @@ macro_rules! cstr {
 /// Assert that the pointer is not NULL or return [`KconfqResult::KCONFQ_RESULT_NULL_PARAMETER`].
 macro_rules! assert_not_null {
     ($ptr:expr) => {{
-        if $ptr.is_null() {
+        let ptr = $ptr;
+        if ptr.is_null() {
             return KconfqResult::KCONFQ_RESULT_NULL_PARAMETER;
         }
     }};
@@ -35,9 +36,10 @@ macro_rules! assert_not_null {
 /// Run [`assert_not_null`] on pointer, then dereference it and set to NULL.
 macro_rules! assert_not_null_and_set {
     ($ptr:expr) => {{
-        assert_not_null!($ptr);
+        let ptr = $ptr;
+        assert_not_null!(ptr);
         unsafe {
-            *$ptr = std::ptr::null_mut();
+            *ptr = std::ptr::null_mut();
         }
     }};
 }
